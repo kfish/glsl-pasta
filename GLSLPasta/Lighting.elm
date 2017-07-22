@@ -9,7 +9,6 @@ module GLSLPasta.Lighting exposing (..)
 @docs fragmentReflection, fragmentNormal, fragmentNoNormal, fragmentSimple
 -}
 
-import GLSLPasta exposing (..)
 import GLSLPasta.Types exposing (..)
 
 
@@ -90,13 +89,16 @@ fragmentReflection =
         ]
     }
 
+
+
+
 {-| normal mapping according to:
 <http://www.gamasutra.com/blogs/RobertBasler/20131122/205462/Three_Normal_Mapping_Techniques_Explained_For_the_Mathematically_Uninclined.php?print=1>
 -}
 vertexNormal : Part
 vertexNormal =
     { id = "lighting.vertexNormal"
-    , dependencies = []
+    , dependencies = [ "math.transposeMat3" ]
     , globals =
         [ Attribute "vec3" "position"
         , Attribute "vec3" "normal"
@@ -111,15 +113,7 @@ vertexNormal =
         , Uniform "vec3" "lightPosition"
         , Uniform "vec3" "viewPosition"
         ]
-    , functions =
-        [ """
-            mat3 transpose(mat3 m) {
-                return mat3(m[0][0], m[1][0], m[2][0],
-                            m[0][1], m[1][1], m[2][1],
-                            m[0][2], m[1][2], m[2][2]);
-            }
-            """
-        ]
+    , functions = []
     , splices =
         [ """
             vec4 pos = vec4(position, 1.0 );
