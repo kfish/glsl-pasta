@@ -6,7 +6,7 @@ module GLSLPasta.Lighting exposing (..)
 @docs vertexReflection, vertexNormal, vertexNoNormal, vertexSimple
 
 # Vertex shader components
-@docs vertex_position4, vertex_gl_Position, vertex_vTexCoord, vertex_SphericalEnvironmentMapping, vertexTBN
+@docs vertex_position4, vertex_gl_Position, vertex_vTexCoord, vertex_SphericalEnvironmentMapping, vertexTBN, vertexNoTangent
 
 # Fragment shaders
 @docs fragmentReflection, fragmentNormal, fragmentNoNormal, fragmentSimple
@@ -318,21 +318,25 @@ fragmentNormal =
 
 {-| same as the normal mapping shader, but without deforming normals.
 -}
-vertexNoNormal : Component
-vertexNoNormal =
-    { id = "lighting.vertexNoNormal"
-    , dependencies = none
-    , provides = [ "gl_Position" ]
+vertexNoTangent : Component
+vertexNoTangent =
+    { empty
+        | id = "lighting.vertexNoTangent"
+        , dependencies =
+            Dependencies
+                [ vertex_position4
+                ]
+        , provides =
+                [ "vLightDirection"
+                , "vViewDirection" 
+                , "vNormal"
+                ]
     , requires = []
     , globals =
-        [ Attribute "vec3" "position"
-        , Attribute "vec3" "normal"
-        , Attribute "vec2" "texCoord"
-        , Varying "vec2" "vTexCoord"
+        [ Attribute "vec3" "normal"
         , Varying "vec3" "vLightDirection"
         , Varying "vec3" "vViewDirection"
         , Varying "vec3" "vNormal"
-        , Uniform "mat4" "modelViewProjectionMatrix"
         , Uniform "mat4" "modelMatrix"
         , Uniform "vec3" "lightPosition"
         , Uniform "vec3" "viewPosition"
@@ -340,17 +344,29 @@ vertexNoNormal =
     , functions = []
     , splices =
         [ """
-            vec4 pos = vec4(position, 1.0 );
-            vec3 posWorld = (modelMatrix * pos).xyz;
+            vec3 posWorld = (modelMatrix * position4).xyz;
 
             vLightDirection = lightPosition - posWorld;
             vViewDirection = viewPosition - posWorld;
-            vTexCoord = texCoord;
             // this is incorrect, it should use the normal matrix
             vNormal = mat3(modelMatrix) * normal;
-            gl_Position = modelViewProjectionMatrix * pos;
             """
         ]
+    }
+
+
+{-| same as the normal mapping shader, but without deforming normals.
+-}
+vertexNoNormal : Component
+vertexNoNormal =
+    { empty
+        | id = "lighting.vertexNoNormal"
+        , dependencies =
+            Dependencies
+                [ vertex_gl_Position
+                , vertex_vTexCoord
+                , vertexNoTangent
+                ]
     }
 
 
@@ -410,35 +426,13 @@ fragmentNoNormal =
 -}
 vertexSimple : Component
 vertexSimple =
-    { id = "lighting.vertexSimple"
-    , dependencies = none
-    , provides = [ "gl_Position" ]
-    , requires = []
-    , globals =
-        [ Attribute "vec3" "position"
-        , Attribute "vec3" "normal"
-        , Varying "vec3" "vLightDirection"
-        , Varying "vec3" "vViewDirection"
-        , Varying "vec3" "vNormal"
-        , Uniform "mat4" "modelViewProjectionMatrix"
-        , Uniform "mat4" "modelMatrix"
-        , Uniform "vec3" "lightPosition"
-        , Uniform "vec3" "viewPosition"
-        ]
-    , functions = []
-    , splices =
-        [ """
-            vec4 pos = vec4(position, 1.0 );
-            vec3 posWorld = (modelMatrix * pos).xyz;
-
-            vLightDirection = lightPosition - posWorld;
-            vViewDirection = viewPosition - posWorld;
-            // this is incorrect, it should use the normal matrix
-            vNormal = mat3(modelMatrix) * normal;
-            vNormal = normal;
-            gl_Position = modelViewProjectionMatrix * pos;
-            """
-        ]
+    { empty
+        | id = "lighting.vertexSimple"
+        , dependencies =
+            Dependencies
+                [ vertex_gl_Position
+                , vertexNoTangent
+                ]
     }
 
 
