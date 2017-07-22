@@ -19,6 +19,10 @@ vertexPosition : Part
 vertexPosition =
     { id = "lighting.vertexPosition"
     , dependencies = none
+    , provides =
+        [ "gl_Position"
+        ]
+    , requires = []
     , globals =
         [ Attribute "vec3" "position"
         , Uniform "mat4" "camera"
@@ -46,6 +50,8 @@ vertexReflection : Part
 vertexReflection =
     { id = "lighting.vertexReflection"
     , dependencies = Dependencies [ vertexPosition ]
+    , provides = [ "vNormal" ]
+    , requires = []
     , globals =
         [ Attribute "vec3" "normal"
         , Uniform "mat4" "mvMat"
@@ -74,6 +80,8 @@ fragmentReflection : Part
 fragmentReflection =
     { id = "lighting.fragmentReflection"
     , dependencies = none
+    , provides = [ "gl_FragColor" ]
+    , requires = []
     , globals =
         [ Uniform "sampler2D" "texture"
         , Varying "vec3" "vNormal"
@@ -100,6 +108,8 @@ vertexNormal : Part
 vertexNormal =
     { id = "lighting.vertexNormal"
     , dependencies = Dependencies [ transposeMat3 ]
+    , provides = [ "gl_Position" ]
+    , requires = []
     , globals =
         [ Attribute "vec3" "position"
         , Attribute "vec3" "normal"
@@ -144,6 +154,8 @@ fragmentNormal : Part
 fragmentNormal =
     { id = "lighting.fragmentNormal"
     , dependencies = none
+    , provides = [ "gl_FragColor" ]
+    , requires = []
     , globals =
          [ Uniform "sampler2D" "textureDiff"
          , Uniform "sampler2D" "textureNorm"
@@ -199,6 +211,8 @@ vertexNoNormal : Part
 vertexNoNormal =
     { id = "lighting.vertexNoNormal"
     , dependencies = none
+    , provides = [ "gl_Position" ]
+    , requires = []
     , globals =
         [ Attribute "vec3" "position"
         , Attribute "vec3" "normal"
@@ -237,6 +251,8 @@ fragmentNoNormal : Part
 fragmentNoNormal =
     { id = "lighting.fragmentNoNormal"
     , dependencies = none
+    , provides = [ "gl_FragColor" ]
+    , requires = []
     , globals =
         [ Uniform "sampler2D" "textureDiff"
         , Varying "vec2" "vTexCoord"
@@ -291,6 +307,8 @@ vertexSimple : Part
 vertexSimple =
     { id = "lighting.vertexSimple"
     , dependencies = none
+    , provides = [ "gl_Position" ]
+    , requires = []
     , globals =
         [ Attribute "vec3" "position"
         , Attribute "vec3" "normal"
@@ -327,6 +345,8 @@ fragmentSimple : Part
 fragmentSimple =
     { id = "lighting.fragmentSimple"
     , dependencies = none
+    , provides = [ "gl_FragColor" ]
+    , requires = []
     , globals =
         [ Varying "vec3" "vLightDirection"
         , Varying "vec3" "vViewDirection"

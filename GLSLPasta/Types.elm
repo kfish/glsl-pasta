@@ -5,7 +5,7 @@ module GLSLPasta.Types exposing (..)
 
 # Types
 
-@docs Error, Function, Global, Name, Part, PartId, Splice, Type, Value
+@docs Feature, Error, Function, Global, Name, Part, PartId, Splice, Type, Value
 
 @docs Dependencies, none
 
@@ -16,6 +16,21 @@ module GLSLPasta.Types exposing (..)
   Each Part is labelled with a PartId for use in error messages.
 -}
 type alias PartId =
+    String
+
+{-| An abstract feature provided by a Part, often the name of a
+variable.
+
+For example, a shader that initially sets gl_FragColor might specify
+
+    provides = [ "gl_FragColor" ]
+
+and another shader that modifies gl_FragColor might specify
+
+    requires = [ "gl_FragColor" ]
+
+-}
+type alias Feature =
     String
 
 {-| The name of a global
@@ -62,6 +77,8 @@ type alias Splice =
 type alias Part =
     { id : PartId -- used in error messages
     , dependencies : Dependencies
+    , provides : List Feature
+    , requires : List Feature
     , globals : List Global
     , functions : List Function
     , splices : List Splice
@@ -87,9 +104,7 @@ type Error
         , newGlobal : Global
         , oldGlobal : Global
         }
-{-
-    | MissingDependency
-        { newPartId : PartId
-        , dependency : PartId
+    | MissingRequirement
+        { partId : PartId
+        , requirement : Feature
         }
--}

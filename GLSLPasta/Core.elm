@@ -15,6 +15,8 @@ empty : Part
 empty =
     { id = "pasta.empty"
     , dependencies = none
+    , provides = []
+    , requires = []
     , globals = []
     , functions = []
     , splices = []

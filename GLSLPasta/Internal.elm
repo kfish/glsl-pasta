@@ -55,12 +55,10 @@ errorString error =
                     , ""
                     , "\t" ++ toString c.oldGlobal
                     ]
-{-
-        MissingDependency m ->
+        MissingRequirement m ->
             String.join "\n"
-                [ "Missing dependency " ++ m.dependency ++ ", required by " ++ m.newPartId
+                [ "Missing requirement " ++ m.requirement ++ ", needed by " ++ m.partId
                 ]
--}
 
 
 
@@ -228,32 +226,33 @@ symbolsGenerate symbols =
         |> List.map globalGenerate
         |> String.join "\n"
 
-{-
-checkDeps : Part -> List PartId -> ( List Error, List PartId )
-checkDeps part oldDeps =
+
+checkReqs : Part -> List Feature -> ( List Error, List Feature )
+checkReqs part oldFeatures =
     let
-        f : PartId -> List Error -> List Error
-        f dep oldErrors =
-            if List.member dep oldDeps then
+        f : Feature -> List Error -> List Error
+        f feature oldErrors =
+            if List.member feature oldFeatures then
                 oldErrors
             else
-                oldErrors ++ [ MissingDependency { newPartId = part.id, dependency = dep } ]
+                oldErrors ++ [ MissingRequirement { partId = part.id, requirement = feature } ]
 
         errors =
-            List.foldl f [] part.dependencies
+            List.foldl f [] part.requires
     in
-        ( errors, oldDeps ++ [ part.id ] )
+        ( errors, oldFeatures ++ part.provides )
 
-checkDependencies : List Part -> Result (List Error) String
-checkDependencies parts =
+
+checkRequirements : List Part -> Result (List Error) String
+checkRequirements parts =
     let
-        f : Part -> ( List Error, List PartId ) -> ( List Error, List PartId )
-        f part ( oldErrors, oldDeps ) =
+        f : Part -> ( List Error, List Feature ) -> ( List Error, List Feature )
+        f part ( oldErrors, oldFeatures ) =
             let
-                ( newErrors, newDeps ) =
-                    checkDeps part oldDeps
+                ( newErrors, newFeatures ) =
+                    checkReqs part oldFeatures
             in
-                ( oldErrors ++ newErrors, newDeps )
+                ( oldErrors ++ newErrors, newFeatures )
 
         ( errors, _ ) =
             List.foldl f ( [], [] ) parts
@@ -264,7 +263,6 @@ checkDependencies parts =
 
             _ ->
                 Err errors
--}
 
 
 expandDependencies : List Part -> List Part
@@ -351,8 +349,8 @@ combineWith template parts0 =
         parts =
             expandDependencies parts0
 
-        -- dependenciesResult =
-        --     checkDependencies parts
+        requirementsResult =
+            checkRequirements parts
 
         globalsResult =
             combineGlobals parts
@@ -372,14 +370,12 @@ combineWith template parts0 =
                 Err errors ->
                     errors
     in
-        -- case ( dependenciesResult, globalsResult, functionsResult, splicesResult ) of
-        case ( globalsResult, functionsResult, splicesResult ) of
-            ( Ok globals, Ok functions, Ok splices ) ->
+        case ( requirementsResult, globalsResult, functionsResult, splicesResult ) of
+            ( Ok _, Ok globals, Ok functions, Ok splices ) ->
                 Ok (templateGenerate globals functions splices template)
 
             _ ->
                 Err
                     (List.concatMap extractErrors
-                        -- [ dependenciesResult, globalsResult, functionsResult, splicesResult ]
-                        [ globalsResult, functionsResult, splicesResult ]
+                        [ requirementsResult, globalsResult, functionsResult, splicesResult ]
                     )
