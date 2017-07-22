@@ -2,8 +2,11 @@ module GLSLPasta.Lighting exposing (..)
 
 {-| Basic lighting
 
+# Vertex shaders
 @docs vertexPosition, vertexReflection
 
+# Fragment shaders
+@docs fragmentReflection
 -}
 
 import GLSLPasta exposing (..)
@@ -31,8 +34,14 @@ vertexPosition =
     }
 
 
-{-| Generates vNormal
- -}
+{-| This shader uses Spherical Environment Mapping (SEM).
+Here are some relevant links:
+* [very cool demo](https://www.clicktorelease.com/code/spherical-normal-mapping/#)
+* <https://www.clicktorelease.com/blog/creating-spherical-environment-mapping-shader>
+* <http://www.ozone3d.net/tutorials/glsl_texturing_p04.php>
+
+Generates vNormal
+-}
 vertexReflection : Part
 vertexReflection =
     { id = "lighting.vertexReflection"
@@ -50,6 +59,33 @@ vertexReflection =
             vec3 nm_x = cross(nm_z, vec3(0.0, 1.0, 0.0));
             vec3 nm_y = cross(nm_x, nm_z);
             vNormal = vec3(dot(vNormal, nm_x), dot(vNormal, nm_y), dot(vNormal, nm_z));
+            """
+        ]
+    }
+
+
+{-| This shader uses Spherical Environment Mapping (SEM).
+Here are some relevant links:
+* [very cool demo](https://www.clicktorelease.com/code/spherical-normal-mapping/#)
+* <https://www.clicktorelease.com/blog/creating-spherical-environment-mapping-shader>
+* <http://www.ozone3d.net/tutorials/glsl_texturing_p04.php>
+-}
+fragmentReflection : Part
+fragmentReflection =
+    { id = "lighting.fragmentReflection"
+    , dependencies = []
+    , globals =
+        [ Uniform "sampler2D" "texture"
+        , Varying "vec3" "vNormal"
+        ]
+    , functions = []
+    , splices =
+        [ """
+            vec2 texCoord = vec2(0.5 * vNormal.x + 0.5, - 0.5 * vNormal.y - 0.5);
+            vec4 fragColor = texture2D(texture, texCoord);
+            fragColor.a = 1.0;
+
+            gl_FragColor = fragColor;
             """
         ]
     }
