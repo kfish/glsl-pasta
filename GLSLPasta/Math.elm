@@ -1,7 +1,7 @@
 module GLSLPasta.Math exposing (..)
 
 
-{-| Math parts
+{-| Math components
 
 @docs transposeMat3
 -}
@@ -12,7 +12,7 @@ import GLSLPasta.Types exposing (..)
 
 {-| mat3 transpose
  -}
-transposeMat3 : Part
+transposeMat3 : Component
 transposeMat3 =
     { empty | id = "math.transposeMat3"
             , functions =

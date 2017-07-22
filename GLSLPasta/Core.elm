@@ -1,7 +1,7 @@
 module GLSLPasta.Core exposing (..)
 
 
-{-| Core parts
+{-| Core components
 
 @docs empty
 -}
@@ -9,9 +9,9 @@ module GLSLPasta.Core exposing (..)
 import GLSLPasta.Types exposing (..)
 
 
-{-| An empty Part
+{-| An empty Component
  -}
-empty : Part
+empty : Component
 empty =
     { id = "pasta.empty"
     , dependencies = none

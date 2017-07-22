@@ -15,7 +15,7 @@ import GLSLPasta.Types exposing (..)
 
 {-| Generates gl_Position
  -}
-vertexPosition : Part
+vertexPosition : Component
 vertexPosition =
     { id = "lighting.vertexPosition"
     , dependencies = none
@@ -46,7 +46,7 @@ Here are some relevant links:
 
 Generates vNormal
 -}
-vertexReflection : Part
+vertexReflection : Component
 vertexReflection =
     { id = "lighting.vertexReflection"
     , dependencies = Dependencies [ vertexPosition ]
@@ -76,7 +76,7 @@ Here are some relevant links:
 * <https://www.clicktorelease.com/blog/creating-spherical-environment-mapping-shader>
 * <http://www.ozone3d.net/tutorials/glsl_texturing_p04.php>
 -}
-fragmentReflection : Part
+fragmentReflection : Component
 fragmentReflection =
     { id = "lighting.fragmentReflection"
     , dependencies = none
@@ -104,7 +104,7 @@ fragmentReflection =
 {-| normal mapping according to:
 <http://www.gamasutra.com/blogs/RobertBasler/20131122/205462/Three_Normal_Mapping_Techniques_Explained_For_the_Mathematically_Uninclined.php?print=1>
 -}
-vertexNormal : Part
+vertexNormal : Component
 vertexNormal =
     { id = "lighting.vertexNormal"
     , dependencies = Dependencies [ transposeMat3 ]
@@ -150,7 +150,7 @@ vertexNormal =
 {-| normal mapping according to:
 <http://www.gamasutra.com/blogs/RobertBasler/20131122/205462/Three_Normal_Mapping_Techniques_Explained_For_the_Mathematically_Uninclined.php?print=1>
 -}
-fragmentNormal : Part
+fragmentNormal : Component
 fragmentNormal =
     { id = "lighting.fragmentNormal"
     , dependencies = none
@@ -207,7 +207,7 @@ fragmentNormal =
 
 {-| same as the normal mapping shader, but without deforming normals.
 -}
-vertexNoNormal : Part
+vertexNoNormal : Component
 vertexNoNormal =
     { id = "lighting.vertexNoNormal"
     , dependencies = none
@@ -247,7 +247,7 @@ vertexNoNormal =
 
 {-| same as the normal mapping shader, but without deforming normals.
 -}
-fragmentNoNormal : Part
+fragmentNoNormal : Component
 fragmentNoNormal =
     { id = "lighting.fragmentNoNormal"
     , dependencies = none
@@ -303,7 +303,7 @@ fragmentNoNormal =
 
 {-| same as above, but without any textures.
 -}
-vertexSimple : Part
+vertexSimple : Component
 vertexSimple =
     { id = "lighting.vertexSimple"
     , dependencies = none
@@ -341,7 +341,7 @@ vertexSimple =
 
 {-| same as above, but without any textures.
 -}
-fragmentSimple : Part
+fragmentSimple : Component
 fragmentSimple =
     { id = "lighting.fragmentSimple"
     , dependencies = none

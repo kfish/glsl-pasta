@@ -27,14 +27,14 @@ logErrors errors =
 
 
 
-{-| Combine Parts into the code for a Shader, that can be passed to WebGL.unsafeShader.
+{-| Combine Components into the code for a Shader, that can be passed to WebGL.unsafeShader.
 Errors are logged tot he Javascript console.
  -}
-combine : List Part -> String
-combine parts =
+combine : List Component -> String
+combine components =
     let
         result =
-            combineWith defaultTemplate parts
+            combineWith defaultTemplate components
     in
         case result of
             Ok s ->
@@ -64,6 +64,6 @@ void main()
 
 {-| Combine using a given template
  -}
-combineWith : String -> List Part -> Result (List Error) String
+combineWith : String -> List Component -> Result (List Error) String
 combineWith =
     Internal.combineWith

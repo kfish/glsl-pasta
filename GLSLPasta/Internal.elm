@@ -47,17 +47,17 @@ errorString error =
             in
                 String.join "\n"
                     [ "Conflicting " ++ c.what ++ " for global " ++ name ++ "."
-                    , name ++ " is defined in " ++ c.newPartId ++ " as:"
+                    , name ++ " is defined in " ++ c.newComponentId ++ " as:"
                     , ""
                     , "\t" ++ toString c.newGlobal
                     , ""
-                    , "but was already defined in " ++ String.join ", " c.oldPartIds ++ " as:"
+                    , "but was already defined in " ++ String.join ", " c.oldComponentIds ++ " as:"
                     , ""
                     , "\t" ++ toString c.oldGlobal
                     ]
         MissingRequirement m ->
             String.join "\n"
-                [ "Missing requirement " ++ m.requirement ++ ", needed by " ++ m.partId
+                [ "Missing requirement " ++ m.requirement ++ ", needed by " ++ m.componentId
                 ]
 
 
@@ -66,24 +66,24 @@ errorString error =
 
 
 type alias Symbols =
-    Dict String ( List PartId, Global )
+    Dict String ( List ComponentId, Global )
 
 
-insertGlobal : PartId -> Global -> Symbols -> Result Error Symbols
-insertGlobal part global symbols =
+insertGlobal : ComponentId -> Global -> Symbols -> Result Error Symbols
+insertGlobal component global symbols =
     case global of
         Attribute newType name ->
             case Dict.get name symbols of
                 Nothing ->
-                    Ok (Dict.insert name ( [ part ], global ) symbols)
+                    Ok (Dict.insert name ( [ component ], global ) symbols)
 
-                Just ( oldParts, oldGlobal ) ->
+                Just ( oldComponents, oldGlobal ) ->
                     let
                         err what =
                             GlobalConflict
                                 { what = what
-                                , newPartId = part
-                                , oldPartIds = oldParts
+                                , newComponentId = component
+                                , oldComponentIds = oldComponents
                                 , newGlobal = global
                                 , oldGlobal = oldGlobal
                                 }
@@ -92,7 +92,7 @@ insertGlobal part global symbols =
                         case oldGlobal of
                             Attribute oldType _ ->
                                 if oldType == newType then
-                                    Ok (Dict.insert name ( part :: oldParts, global ) symbols)
+                                    Ok (Dict.insert name ( component :: oldComponents, global ) symbols)
                                 else
                                     err "type"
 
@@ -102,15 +102,15 @@ insertGlobal part global symbols =
         Uniform newType name ->
             case Dict.get name symbols of
                 Nothing ->
-                    Ok (Dict.insert name ( [ part ], global ) symbols)
+                    Ok (Dict.insert name ( [ component ], global ) symbols)
 
-                Just ( oldParts, oldGlobal ) ->
+                Just ( oldComponents, oldGlobal ) ->
                     let
                         err what =
                             GlobalConflict
                                 { what = what
-                                , newPartId = part
-                                , oldPartIds = oldParts
+                                , newComponentId = component
+                                , oldComponentIds = oldComponents
                                 , newGlobal = global
                                 , oldGlobal = oldGlobal
                                 }
@@ -119,7 +119,7 @@ insertGlobal part global symbols =
                         case oldGlobal of
                             Uniform oldType _ ->
                                 if oldType == newType then
-                                    Ok (Dict.insert name ( part :: oldParts, global ) symbols)
+                                    Ok (Dict.insert name ( component :: oldComponents, global ) symbols)
                                 else
                                     err "type"
 
@@ -129,15 +129,15 @@ insertGlobal part global symbols =
         Varying newType name ->
             case Dict.get name symbols of
                 Nothing ->
-                    Ok (Dict.insert name ( [ part ], global ) symbols)
+                    Ok (Dict.insert name ( [ component ], global ) symbols)
 
-                Just ( oldParts, oldGlobal ) ->
+                Just ( oldComponents, oldGlobal ) ->
                     let
                         err what =
                             GlobalConflict
                                 { what = what
-                                , newPartId = part
-                                , oldPartIds = oldParts
+                                , newComponentId = component
+                                , oldComponentIds = oldComponents
                                 , newGlobal = global
                                 , oldGlobal = oldGlobal
                                 }
@@ -146,7 +146,7 @@ insertGlobal part global symbols =
                         case oldGlobal of
                             Varying oldType _ ->
                                 if oldType == newType then
-                                    Ok (Dict.insert name ( part :: oldParts, global ) symbols)
+                                    Ok (Dict.insert name ( component :: oldComponents, global ) symbols)
                                 else
                                     err "type"
 
@@ -156,15 +156,15 @@ insertGlobal part global symbols =
         Const newType name newValue ->
             case Dict.get name symbols of
                 Nothing ->
-                    Ok (Dict.insert name ( [ part ], global ) symbols)
+                    Ok (Dict.insert name ( [ component ], global ) symbols)
 
-                Just ( oldParts, oldGlobal ) ->
+                Just ( oldComponents, oldGlobal ) ->
                     let
                         err what =
                             GlobalConflict
                                 { what = what
-                                , newPartId = part
-                                , oldPartIds = oldParts
+                                , newComponentId = component
+                                , oldComponentIds = oldComponents
                                 , newGlobal = global
                                 , oldGlobal = oldGlobal
                                 }
@@ -173,7 +173,7 @@ insertGlobal part global symbols =
                         case oldGlobal of
                             Const oldType _ oldValue ->
                                 if oldType == newType && oldValue == newValue then
-                                    Ok (Dict.insert name ( part :: oldParts, global ) symbols)
+                                    Ok (Dict.insert name ( component :: oldComponents, global ) symbols)
                                 else if oldType == newType then
                                     err "value"
                                 else
@@ -183,19 +183,19 @@ insertGlobal part global symbols =
                                 err "qualifier"
 
 
-insertGlobals : Part -> Symbols -> ( List Error, Symbols )
-insertGlobals part symbols =
+insertGlobals : Component -> Symbols -> ( List Error, Symbols )
+insertGlobals component symbols =
     let
         f : Global -> ( List Error, Symbols ) -> ( List Error, Symbols )
         f global ( oldErrors, oldSymbols ) =
-            case insertGlobal part.id global oldSymbols of
+            case insertGlobal component.id global oldSymbols of
                 Ok newSymbols ->
                     ( oldErrors, newSymbols )
 
                 Err newError ->
                     ( oldErrors ++ [ newError ], oldSymbols )
     in
-        List.foldl f ( [], symbols ) part.globals
+        List.foldl f ( [], symbols ) component.globals
 
 
 
@@ -227,35 +227,35 @@ symbolsGenerate symbols =
         |> String.join "\n"
 
 
-checkReqs : Part -> List Feature -> ( List Error, List Feature )
-checkReqs part oldFeatures =
+checkReqs : Component -> List Feature -> ( List Error, List Feature )
+checkReqs component oldFeatures =
     let
         f : Feature -> List Error -> List Error
         f feature oldErrors =
             if List.member feature oldFeatures then
                 oldErrors
             else
-                oldErrors ++ [ MissingRequirement { partId = part.id, requirement = feature } ]
+                oldErrors ++ [ MissingRequirement { componentId = component.id, requirement = feature } ]
 
         errors =
-            List.foldl f [] part.requires
+            List.foldl f [] component.requires
     in
-        ( errors, oldFeatures ++ part.provides )
+        ( errors, oldFeatures ++ component.provides )
 
 
-checkRequirements : List Part -> Result (List Error) String
-checkRequirements parts =
+checkRequirements : List Component -> Result (List Error) String
+checkRequirements components =
     let
-        f : Part -> ( List Error, List Feature ) -> ( List Error, List Feature )
-        f part ( oldErrors, oldFeatures ) =
+        f : Component -> ( List Error, List Feature ) -> ( List Error, List Feature )
+        f component ( oldErrors, oldFeatures ) =
             let
                 ( newErrors, newFeatures ) =
-                    checkReqs part oldFeatures
+                    checkReqs component oldFeatures
             in
                 ( oldErrors ++ newErrors, newFeatures )
 
         ( errors, _ ) =
-            List.foldl f ( [], [] ) parts
+            List.foldl f ( [], [] ) components
     in
         case errors of
             [] ->
@@ -265,37 +265,37 @@ checkRequirements parts =
                 Err errors
 
 
-expandDependencies : List Part -> List Part
-expandDependencies parts =
+expandDependencies : List Component -> List Component
+expandDependencies components =
     let
-        expand : Part -> List Part
-        expand part =
-            case part.dependencies of
+        expand : Component -> List Component
+        expand component =
+            case component.dependencies of
                 Dependencies deps ->
-                    List.concatMap expand deps ++ [ part ]
+                    List.concatMap expand deps ++ [ component ]
 
     in
-        List.concatMap expand parts
+        List.concatMap expand components
         |> List.uniqueBy .id
         
 
-combineGlobals : List Part -> Result (List Error) String
-combineGlobals parts =
+combineGlobals : List Component -> Result (List Error) String
+combineGlobals components =
     let
         symbols0 : Symbols
         symbols0 =
             Dict.empty
 
-        f : Part -> ( List Error, Symbols ) -> ( List Error, Symbols )
-        f part ( oldErrors, oldSymbols ) =
+        f : Component -> ( List Error, Symbols ) -> ( List Error, Symbols )
+        f component ( oldErrors, oldSymbols ) =
             let
                 ( newErrors, newSymbols ) =
-                    insertGlobals part oldSymbols
+                    insertGlobals component oldSymbols
             in
                 ( oldErrors ++ newErrors, newSymbols )
 
         ( errors, symbols ) =
-            List.foldl f ( [], symbols0 ) parts
+            List.foldl f ( [], symbols0 ) components
     in
         case errors of
             [] ->
@@ -305,22 +305,22 @@ combineGlobals parts =
                 Err errors
 
 
-combineFunctions : List Part -> Result (List Error) String
-combineFunctions parts =
+combineFunctions : List Component -> Result (List Error) String
+combineFunctions components =
     let
         functions : List Function
         functions =
-            List.concatMap .functions parts
+            List.concatMap .functions components
     in
         Ok (String.join "\n" functions)
 
 
-combineSplices : List Part -> Result (List Error) String
-combineSplices parts =
+combineSplices : List Component -> Result (List Error) String
+combineSplices components =
     let
         splices : List Splice
         splices =
-            List.concatMap .splices parts
+            List.concatMap .splices components
     in
         Ok (String.join "\n" splices)
 
@@ -343,23 +343,23 @@ templateGenerate globals functions splices template =
 --
 
 
-combineWith : String -> List Part -> Result (List Error) String
-combineWith template parts0 =
+combineWith : String -> List Component -> Result (List Error) String
+combineWith template components0 =
     let
-        parts =
-            expandDependencies parts0
+        components =
+            expandDependencies components0
 
         requirementsResult =
-            checkRequirements parts
+            checkRequirements components
 
         globalsResult =
-            combineGlobals parts
+            combineGlobals components
 
         functionsResult =
-            combineFunctions parts
+            combineFunctions components
 
         splicesResult =
-            combineSplices parts
+            combineSplices components
 
         extractErrors : Result (List Error) String -> List Error
         extractErrors result =
