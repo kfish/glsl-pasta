@@ -8,6 +8,8 @@
     ],
     "exposed-modules": [
         "GLSLPasta",
+        "GLSLPasta.Core",
+        "GLSLPasta.Math",
         "GLSLPasta.Lighting",
         "GLSLPasta.Types"
     ],
