@@ -74,7 +74,10 @@ Generates vNormal
 vertex_vNormal : Component
 vertex_vNormal =
     { id = "lighting.vertex_vNormal"
-    , dependencies = none
+    , dependencies =
+        Dependencies
+            [ vertex_position4
+            ]
     , provides = [ "vNormal" ]
     , requires = []
     , globals =
@@ -86,7 +89,7 @@ vertex_vNormal =
     , splices =
         [ """
             vNormal = vec3(mvMat * vec4(normal, 0.0));
-            vec3 nm_z = normalize(vec3(vertex4));
+            vec3 nm_z = normalize(vec3(position4));
             vec3 nm_x = cross(nm_z, vec3(0.0, 1.0, 0.0));
             vec3 nm_y = cross(nm_x, nm_z);
             vNormal = vec3(dot(vNormal, nm_x), dot(vNormal, nm_y), dot(vNormal, nm_z));
