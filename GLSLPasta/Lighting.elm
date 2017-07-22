@@ -1,9 +1,17 @@
 module GLSLPasta.Lighting exposing (..)
 
+{-| Basic lighting
+
+@docs vertexPosition, vertexReflection
+
+-}
+
 import GLSLPasta exposing (..)
 import GLSLPasta.Types exposing (..)
 
 
+{-| Generates gl_Position
+ -}
 vertexPosition : Part
 vertexPosition =
     { id = "lighting.vertexPosition"
@@ -23,6 +31,8 @@ vertexPosition =
     }
 
 
+{-| Generates vNormal
+ -}
 vertexReflection : Part
 vertexReflection =
     { id = "lighting.vertexReflection"

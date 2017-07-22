@@ -5,28 +5,16 @@ module GLSLPasta
         , defaultTemplate
         )
 
+{-| GLSLPasta
+
+@docs combine, combineWith
+
+@docs defaultTemplate
+
+-}
+
 import GLSLPasta.Internal as Internal exposing (..)
 import GLSLPasta.Types as Types exposing (..)
-
-
-type alias PartId =
-    Types.PartId
-
-
-type alias Name =
-    Types.Name
-
-
-type alias Value =
-    Types.Value
-
-
-type alias Type =
-    Types.Type
-
-
-type alias Global =
-    Types.Global
 
 
 logErrors : List Error -> String
@@ -39,9 +27,9 @@ logErrors errors =
 
 
 
--- | Combine Parts into the code for a Shader, that can be passed to WebGL.unsafeShader
-
-
+{-| Combine Parts into the code for a Shader, that can be passed to WebGL.unsafeShader.
+Errors are logged tot he Javascript console.
+ -}
 combine : List Part -> String
 combine parts =
     let
@@ -56,10 +44,12 @@ combine parts =
                 logErrors errors
 
 
+{-| The default template used by combine
+ -}
 defaultTemplate : String
 defaultTemplate =
     """
-precision mediump float
+precision mediump float;
 
 __PASTA_GLOBALS__
 
@@ -72,7 +62,8 @@ void main()
 
     """
 
-
+{-| Combine using a given template
+ -}
 combineWith : String -> List Part -> Result (List Error) String
 combineWith =
     Internal.combineWith

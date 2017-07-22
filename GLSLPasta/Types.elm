@@ -1,24 +1,41 @@
 module GLSLPasta.Types exposing (..)
 
--- Each Part is labelled with a PartId for use in error messages.
+
+{-| GLSLPasta Types
+
+# Types
+
+@docs Error, Function, Global, Name, Part, PartId, Splice, Type, Value
+
+-}
 
 
+{-| An identifier for a Part
+  Each Part is labelled with a PartId for use in error messages.
+-}
 type alias PartId =
     String
 
-
+{-| The name of a global
+ -}
 type alias Name =
     String
 
 
+{-| The value of a global constant
+ -}
 type alias Value =
     String
 
 
+{-| The type of a global
+ -}
 type alias Type =
     String
 
 
+{-| A Global
+ -}
 type Global
     = Attribute Type Name
     | Uniform Type Name
@@ -26,19 +43,20 @@ type Global
     | Const Type Name Value
 
 
+{-| Text for a function
+ -}
 type alias Function =
     String
 
 
-
--- if this is problematic, we could considder tracking the vars each splice affects, and
--- sorting in dependency order (rather than just whatever order the Parts are given)
-
-
+{-| Text to splice into main()
+ -}
 type alias Splice =
     String
 
 
+{-| A Part
+ -}
 type alias Part =
     { id : PartId -- used in error messages
     , dependencies : List PartId
@@ -48,6 +66,8 @@ type alias Part =
     }
 
 
+{-| Errors returned during combine
+ -}
 type Error
     = GlobalConflict
         { what : String
