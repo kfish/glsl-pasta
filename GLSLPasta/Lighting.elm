@@ -3,7 +3,7 @@ module GLSLPasta.Lighting exposing (..)
 {-| Basic lighting
 
 # Vertex shaders
-@docs vertexPosition, vertexReflection, vertexNormal, vertexNoNormal, vertexSimple
+@docs vertexPosition, vertex_vTexCoord, vertexReflection, vertexNormal, vertexNoNormal, vertexSimple
 
 # Fragment shaders
 @docs fragmentReflection, fragmentNormal, fragmentNoNormal, fragmentSimple
@@ -102,6 +102,25 @@ fragmentReflection =
     }
 
 
+{-| Forward the texture coordinate to the fragment shader, as vTexCoord
+-}
+vertex_vTexCoord : Component
+vertex_vTexCoord =
+    { id = "lighting.worldPosition"
+    , dependencies = none
+    , provides = []
+    , requires = []
+    , globals =
+        [ Attribute "vec2" "texCoord"
+        , Varying "vec2" "vTexCoord"
+        ]
+    , functions = []
+    , splices =
+        [ """
+            vTexCoord = texCoord;
+            """
+        ]
+    }
 
 
 {-| normal mapping according to:
