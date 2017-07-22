@@ -39,4 +39,8 @@ type Error
         , newGlobal : Global
         , oldGlobal : Global
         }
+    | MissingDependency
+        { newPartId : PartId
+        , dependency : PartId
+        }
 

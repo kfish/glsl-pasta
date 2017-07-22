@@ -32,7 +32,8 @@ errorString : Error -> String
 errorString error =
     case error of
         GlobalConflict c ->
-            let name = globalName c.newGlobal
+            let
+                name = globalName c.newGlobal
             in
                 String.join "\n"
                     [ "Conflicting " ++ c.what ++ " for global " ++ name ++ "."
@@ -43,6 +44,10 @@ errorString error =
                     , "but was already defined in " ++ String.join ", " c.oldPartIds ++ " as:"
                     , ""
                     , "\t" ++ toString c.oldGlobal
+                    ]
+        MissingDependency m ->
+                String.join "\n"
+                    [ "Missing dependency " ++ m.dependency ++ ", required by " ++ m.newPartId
                     ]
     
 
@@ -188,6 +193,37 @@ symbolsGenerate symbols =
     |> List.map globalGenerate
     |> String.join "\n"
 
+checkDeps : Part -> List PartId -> (List Error, List PartId)
+checkDeps part oldDeps =
+    let
+        f : PartId -> List Error -> List Error
+        f dep oldErrors =
+            if List.member dep oldDeps then
+                oldErrors
+            else
+                oldErrors ++ [ MissingDependency { newPartId = part.id, dependency = dep } ]
+
+        errors = List.foldl f [] part.dependencies
+    in
+        (errors, oldDeps ++ [part.id])
+
+checkDependencies : List Part -> Result (List Error) String
+checkDependencies parts =
+    let
+        f : Part -> (List Error, List PartId) -> (List Error, List PartId)
+        f part (oldErrors, oldDeps) =
+            let
+                (newErrors, newDeps) = checkDeps part oldDeps
+            in
+                (oldErrors ++ newErrors, newDeps)
+
+        (errors, _) = List.foldl f ([], []) parts
+    in
+        case errors of
+            [] -> Ok ""
+            _  -> Err errors
+
+
 combineGlobals : List Part -> Result (List Error) String
 combineGlobals parts =
     let
@@ -241,17 +277,17 @@ templateGenerate globals functions splices template =
 combineWith : String -> List Part -> Result (List Error) String
 combineWith template parts =
     let
+        dependenciesResult =
+            checkDependencies parts
+
         globalsResult =
             combineGlobals parts
-            |> Debug.log "globalsResult"
 
         functionsResult =
             combineFunctions parts
-            |> Debug.log "functionsResult"
 
         splicesResult =
             combineSplices parts
-            |> Debug.log "splicesResult"
 
         extractErrors : Result (List Error) String -> List Error
         extractErrors result =
@@ -261,9 +297,11 @@ combineWith template parts =
                 Err errors ->
                     errors
     in
-        case (globalsResult, functionsResult, splicesResult) of
-            (Ok globals, Ok functions, Ok splices) ->
+        case (dependenciesResult, globalsResult, functionsResult, splicesResult) of
+            (Ok _, Ok globals, Ok functions, Ok splices) ->
                 Ok (templateGenerate globals functions splices template)
             _ ->
-                Err (List.concatMap extractErrors [globalsResult, functionsResult, splicesResult])
+                Err ( List.concatMap extractErrors
+                       [dependenciesResult, globalsResult, functionsResult, splicesResult]
+                    )
         
