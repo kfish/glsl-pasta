@@ -2,8 +2,11 @@ module GLSLPasta.Lighting exposing (..)
 
 {-| Basic lighting
 
-# Vertex shaders
-@docs vertex_position4, vertex_gl_Position, vertex_vTexCoord, vertexReflection, vertexTBN, vertexNoNormal, vertexSimple
+# Complete vertex shaders
+@docs vertexReflection, vertexNormal, vertexNoNormal, vertexSimple
+
+# Vertex shader components
+@docs vertex_position4, vertex_gl_Position, vertex_vTexCoord, vertex_vNormal, vertexTBN
 
 # Fragment shaders
 @docs fragmentReflection, fragmentNormal, fragmentNoNormal, fragmentSimple
@@ -21,7 +24,7 @@ import GLSLPasta.Types exposing (..)
 vertex_position4 : Component
 vertex_position4 =
     { empty
-        | id = "lighting.vertexPosition4"
+        | id = "lighting.vertex_position4"
     , provides =
         [ "position4"
         ]
@@ -41,10 +44,10 @@ vertex_position4 =
 vertex_gl_Position : Component
 vertex_gl_Position =
     { empty
-        | id = "lighting.vertexPosition"
+        | id = "lighting.vertex_gl_Position"
         , dependencies =
             Dependencies
-                [ vertexPosition4
+                [ vertex_position4
                 ]
         , provides =
             [ "gl_Position"
@@ -68,10 +71,10 @@ Here are some relevant links:
 
 Generates vNormal
 -}
-vertexReflection : Component
-vertexReflection =
-    { id = "lighting.vertexReflection"
-    , dependencies = Dependencies [ vertexPosition ]
+vertex_vNormal : Component
+vertex_vNormal =
+    { id = "lighting.vertex_vNormal"
+    , dependencies = none
     , provides = [ "vNormal" ]
     , requires = []
     , globals =
@@ -89,6 +92,24 @@ vertexReflection =
             vNormal = vec3(dot(vNormal, nm_x), dot(vNormal, nm_y), dot(vNormal, nm_z));
             """
         ]
+    }
+
+
+{-| This shader uses Spherical Environment Mapping (SEM).
+Here are some relevant links:
+* [very cool demo](https://www.clicktorelease.com/code/spherical-normal-mapping/#)
+* <https://www.clicktorelease.com/blog/creating-spherical-environment-mapping-shader>
+* <http://www.ozone3d.net/tutorials/glsl_texturing_p04.php>
+-}
+vertexReflection : Component
+vertexReflection =
+    { empty
+        | id = "lighting.vertexReflection"
+        , dependencies =
+            Dependencies
+                [ vertex_gl_Position
+                , vertex_vNormal
+                ]
     }
 
 
@@ -151,7 +172,7 @@ vertexTBN =
         | id = "lighting.vertexTBN"
         , dependencies =
             Dependencies
-                [ vertexPosition4
+                [ vertex_position4
                 , transposeMat3
                 ]
         , provides =
@@ -182,6 +203,22 @@ vertexTBN =
             vViewDirection = tbn*(viewPosition - posWorld);
 """
             ]
+    }
+
+
+{-| normal mapping according to:
+<http://www.gamasutra.com/blogs/RobertBasler/20131122/205462/Three_Normal_Mapping_Techniques_Explained_For_the_Mathematically_Uninclined.php?print=1>
+-}
+vertexNormal : Component
+vertexNormal =
+    { empty
+        | id = "lighting.vertexNormal"
+        , dependencies =
+            Dependencies
+                [ vertex_gl_Position
+                , vertex_vTexCoord
+                , vertexTBN
+                ]
     }
 
 
