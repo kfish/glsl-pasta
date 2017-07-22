@@ -3,7 +3,7 @@ module GLSLPasta.Lighting exposing (..)
 {-| Basic lighting
 
 # Vertex shaders
-@docs vertexPosition, vertex_vTexCoord, vertexReflection, vertexNormal, vertexNoNormal, vertexSimple
+@docs vertex_position4, vertex_gl_Position, vertex_vTexCoord, vertexReflection, vertexTBN, vertexNoNormal, vertexSimple
 
 # Fragment shaders
 @docs fragmentReflection, fragmentNormal, fragmentNoNormal, fragmentSimple
@@ -16,28 +16,47 @@ import GLSLPasta.Math exposing (transposeMat3)
 import GLSLPasta.Types exposing (..)
 
 
-{-| Generates gl_Position
+{-| Generates position4
  -}
-vertexPosition : Component
-vertexPosition =
-    { id = "lighting.vertexPosition"
-    , dependencies = none
+vertex_position4 : Component
+vertex_position4 =
+    { empty
+        | id = "lighting.vertexPosition4"
     , provides =
-        [ "gl_Position"
+        [ "position4"
         ]
-    , requires = []
     , globals =
         [ Attribute "vec3" "position"
-        , Uniform "mat4" "camera"
-        , Uniform "mat4" "mvMat"
         ]
-    , functions = []
     , splices =
         [ """
-            vec4 vertex4 = mvMat * vec4(position, 1.0);
-            gl_Position = camera * vertex4;
+            vec4 position4 = vec4(position, 1.0);
             """
         ]
+    }
+
+
+{-| Generates gl_Position
+ -}
+vertex_gl_Position : Component
+vertex_gl_Position =
+    { empty
+        | id = "lighting.vertexPosition"
+        , dependencies =
+            Dependencies
+                [ vertexPosition4
+                ]
+        , provides =
+            [ "gl_Position"
+            ]
+        , globals =
+            [ Uniform "mat4" "modelViewProjectionMatrix"
+            ]
+        , splices =
+            [ """
+            gl_Position = modelViewProjectionMatrix * position4;
+"""
+            ]
     }
 
 
@@ -126,30 +145,31 @@ vertex_vTexCoord =
 {-| normal mapping according to:
 <http://www.gamasutra.com/blogs/RobertBasler/20131122/205462/Three_Normal_Mapping_Techniques_Explained_For_the_Mathematically_Uninclined.php?print=1>
 -}
-vertexNormal : Component
-vertexNormal =
-    { id = "lighting.vertexNormal"
-    , dependencies = Dependencies [ transposeMat3 ]
-    , provides = [ "gl_Position" ]
-    , requires = []
-    , globals =
-        [ Attribute "vec3" "position"
-        , Attribute "vec3" "normal"
-        , Attribute "vec2" "texCoord"
-        , Attribute "vec4" "tangent"
-        , Varying "vec2" "vTexCoord"
-        , Varying "vec3" "vLightDirection"
-        , Varying "vec3" "vViewDirection"
-        , Uniform "mat4" "modelViewProjectionMatrix"
-        , Uniform "mat4" "modelMatrix"
-        , Uniform "vec3" "lightPosition"
-        , Uniform "vec3" "viewPosition"
-        ]
-    , functions = []
-    , splices =
-        [ """
-            vec4 pos = vec4(position, 1.0 );
-            vec3 posWorld = (modelMatrix * pos).xyz;
+vertexTBN : Component
+vertexTBN =
+    { empty
+        | id = "lighting.vertexTBN"
+        , dependencies =
+            Dependencies
+                [ vertexPosition4
+                , transposeMat3
+                ]
+        , provides =
+                [ "vLightDirection"
+                , "vViewDirection" 
+                ]
+        , globals =
+            [ Attribute "vec3" "normal"
+            , Attribute "vec4" "tangent"
+            , Varying "vec3" "vLightDirection"
+            , Varying "vec3" "vViewDirection"
+            , Uniform "mat4" "modelMatrix"
+            , Uniform "vec3" "lightPosition"
+            , Uniform "vec3" "viewPosition"
+            ]
+        , splices =
+            [ """
+            vec3 posWorld = (modelMatrix * position4).xyz;
 
             // Tangent, Bitangent, Normal space matrix TBN
             // this isn't entirely correct, it should use the normal matrix
@@ -160,10 +180,8 @@ vertexNormal =
             mat3 tbn = transpose(mat3(t, b, n));
             vLightDirection = tbn*(lightPosition - posWorld);
             vViewDirection = tbn*(viewPosition - posWorld);
-            vTexCoord = texCoord;
-            gl_Position = modelViewProjectionMatrix * pos;
-            """
-        ]
+"""
+            ]
     }
 
 
