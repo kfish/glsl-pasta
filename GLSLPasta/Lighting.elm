@@ -3,10 +3,10 @@ module GLSLPasta.Lighting exposing (..)
 {-| Basic lighting
 
 # Vertex shaders
-@docs vertexPosition, vertexReflection, vertexNormal
+@docs vertexPosition, vertexReflection, vertexNormal, vertexNoNormal
 
 # Fragment shaders
-@docs fragmentReflection, fragmentNormal
+@docs fragmentReflection, fragmentNormal, fragmentNoNormal
 -}
 
 import GLSLPasta exposing (..)
@@ -196,3 +196,97 @@ fragmentNormal =
             """
          ]
     }
+
+
+{-| same as the normal mapping shader, but without deforming normals.
+-}
+vertexNoNormal : Part
+vertexNoNormal =
+    { id = "lighting.vertexNoNormal"
+    , dependencies = []
+    , globals =
+        [ Attribute "vec3" "position"
+        , Attribute "vec3" "normal"
+        , Attribute "vec2" "texCoord"
+        , Varying "vec2" "vTexCoord"
+        , Varying "vec3" "vLightDirection"
+        , Varying "vec3" "vViewDirection"
+        , Varying "vec3" "vNormal"
+        , Varying "vec4" "worldPosition"
+        , Uniform "mat4" "modelViewProjectionMatrix"
+        , Uniform "mat4" "modelMatrix"
+        , Uniform "vec3" "lightPosition"
+        , Uniform "vec3" "viewPosition"
+        ]
+    , functions = []
+    , splices =
+        [ """
+            vec4 pos = vec4(position, 1.0 );
+            vec3 posWorld = (modelMatrix * pos).xyz;
+
+            vLightDirection = lightPosition - posWorld;
+            vViewDirection = viewPosition - posWorld;
+            vTexCoord = texCoord;
+            // this is incorrect, it should use the normal matrix
+            vNormal = mat3(modelMatrix) * normal;
+            gl_Position = modelViewProjectionMatrix * pos;
+            worldPosition = gl_Position;
+            """
+        ]
+    }
+
+
+{-| same as the normal mapping shader, but without deforming normals.
+-}
+fragmentNoNormal : Part
+fragmentNoNormal =
+    { id = "lighting.fragmentNoNormal"
+    , dependencies = []
+    , globals =
+        [ Uniform "sampler2D" "textureDiff"
+        , Varying "vec2" "vTexCoord"
+        , Varying "vec3" "vLightDirection"
+        , Varying "vec3" "vViewDirection"
+        , Varying "vec3" "vNormal"
+        , Varying "vec4" "worldPosition"
+        ]
+    , functions = []
+    , splices =
+        [ """
+            vec3 lightDir = normalize(vLightDirection);
+
+            // lambert
+            vec3 pixelNormal = normalize(vNormal);
+            float lambert = max(dot(pixelNormal, lightDir), 0.0);
+
+            // diffuse + lambert
+            vec3 lightIntensities = vec3(1.5, 1.0, 1.0);
+            vec3 diffuseColor = texture2D(textureDiff, vTexCoord).rgb;
+            vec3 diffuse = lambert * diffuseColor * lightIntensities;
+
+            // ambient
+            vec3 ambient = 0.3 * diffuseColor;
+
+            // specular
+            float shininess = 32.0;
+            vec3 viewDir = normalize(vViewDirection);
+            vec3 reflectDir = reflect(-lightDir, pixelNormal);
+            vec3 halfwayDir = normalize(lightDir + viewDir);
+            float spec = pow(max(dot(pixelNormal, halfwayDir), 0.0), shininess);
+            vec3 specular = vec3(0.2) * spec * lightIntensities;
+
+            // attenuation
+            float lightAttenuation = 0.3;
+            float attenuation = 1.0 / (1.0 + lightAttenuation * pow(length(vLightDirection), 2.0));
+
+            vec3 final_color = ambient + (diffuse + specular) * attenuation;
+
+            gl_FragColor = vec4(final_color, 1.0);
+
+            float lightenDistance = worldPosition.w * 0.01;
+            gl_FragColor *= 1.0 - lightenDistance * vec4(0.18, 0.21, 0.24, 0.15);
+            """
+        ]
+    }
+
+
