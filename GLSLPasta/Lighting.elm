@@ -6,7 +6,7 @@ module GLSLPasta.Lighting exposing (..)
 @docs vertexReflection, vertexNormal, vertexNoNormal, vertexSimple
 
 # Vertex shader components
-@docs vertex_position4, vertex_gl_Position, vertex_vTexCoord, vertex_vNormal, vertexTBN
+@docs vertex_position4, vertex_gl_Position, vertex_vTexCoord, vertex_SphericalEnvironmentMapping, vertexTBN
 
 # Fragment shaders
 @docs fragmentReflection, fragmentNormal, fragmentNoNormal, fragmentSimple
@@ -71,9 +71,9 @@ Here are some relevant links:
 
 Generates vNormal
 -}
-vertex_vNormal : Component
-vertex_vNormal =
-    { id = "lighting.vertex_vNormal"
+vertex_SphericalEnvironmentMapping : Component
+vertex_SphericalEnvironmentMapping =
+    { id = "lighting.vertex_SphericalEnvironmentMapping"
     , dependencies =
         Dependencies
             [ vertex_position4
@@ -111,7 +111,7 @@ vertexReflection =
         , dependencies =
             Dependencies
                 [ vertex_gl_Position
-                , vertex_vNormal
+                , vertex_SphericalEnvironmentMapping
                 ]
     }
 
