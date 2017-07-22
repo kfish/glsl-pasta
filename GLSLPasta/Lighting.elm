@@ -8,9 +8,10 @@ module GLSLPasta.Lighting exposing (..)
 # Fragment shaders
 @docs fragmentReflection, fragmentNormal, fragmentNoNormal, fragmentSimple
 
-@docs worldPosition, lightenDistance
+@docs vertex_clipPosition, lightenDistance
 -}
 
+import GLSLPasta.Core exposing (..)
 import GLSLPasta.Math exposing (transposeMat3)
 import GLSLPasta.Types exposing (..)
 
@@ -146,23 +147,22 @@ vertexNormal =
         ]
     }
 
-{-| Forward the worldPosition to the fragment shader
+
+{-| Forward the position in clip space (ie. gl_Position) to the fragment shader, as clipPosition
 -}
-worldPosition : Component
-worldPosition =
-    { id = "lighting.worldPosition"
-    , dependencies = none
-    , provides = []
-    , requires = [ "gl_Position" ]
-    , globals =
-        [ Varying "vec4" "worldPosition"
-        ]
-    , functions = []
-    , splices =
-        [ """
-            worldPosition = gl_Position;
-            """
-        ]
+vertex_clipPosition : Component
+vertex_clipPosition =
+    { empty
+        | id = "lighting.vertex_clipPosition"
+        , requires = [ "gl_Position" ]
+        , globals =
+            [ Varying "vec4" "clipPosition"
+            ]
+        , splices =
+            [ """
+            clipPosition = gl_Position;
+"""
+            ]
     }
 
 
@@ -170,20 +170,18 @@ worldPosition =
 -}
 lightenDistance : Component
 lightenDistance =
-    { id = "lighting.lightenDistance"
-    , dependencies = none
-    , provides = []
-    , requires = [ "gl_FragColor" ]
-    , globals =
-        [ Varying "vec4" "worldPosition"
-        ] 
-    , functions = []
-    , splices =
-        [ """
-            float lightenDistance = worldPosition.w * 0.01;
+    { empty
+        | id = "lighting.lightenDistance"
+        , requires = [ "gl_FragColor" ]
+        , globals =
+            [ Varying "vec4" "clipPosition"
+            ] 
+        , splices =
+            [ """
+            float lightenDistance = clipPosition.w * 0.01;
             gl_FragColor *= 1.0 - lightenDistance * vec4(0.18, 0.21, 0.24, 0.15);
-            """
-        ]
+"""
+            ]
     }
 
 
