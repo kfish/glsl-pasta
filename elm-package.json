@@ -1,0 +1,14 @@
+{
+    "version": "0.1.0",
+    "summary": "Combine GLSL shaders for use with Elm WebGL",
+    "repository": "https://github.com/kfish/glsl-pasta.git",
+    "license": "BSD3",
+    "source-directories": [
+        "."
+    ],
+    "exposed-modules": [],
+    "dependencies": {
+        "elm-lang/core": "5.1.1 <= v < 6.0.0"
+    },
+    "elm-version": "0.18.0 <= v < 0.19.0"
+}
