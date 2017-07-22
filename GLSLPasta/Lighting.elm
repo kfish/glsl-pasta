@@ -8,8 +8,11 @@ module GLSLPasta.Lighting exposing (..)
 # Vertex shader components
 @docs vertex_position4, vertex_gl_Position, vertex_vTexCoord, vertex_SphericalEnvironmentMapping, vertexTBN, vertexNoTangent
 
-# Fragment shaders
+# Complete fragment shaders
 @docs fragmentReflection, fragmentNormal, fragmentNoNormal, fragmentSimple
+
+# Fragment shader components
+@docs fragment_lightDir
 
 @docs vertex_clipPosition, lightenDistance
 -}
@@ -262,13 +265,34 @@ lightenDistance =
     }
 
 
+{-| Provides lightDir
+ -}
+fragment_lightDir : Component
+fragment_lightDir =
+    { empty
+        | id = "lighting.fragment_lightDir"
+        , provides = [ "lightDir" ]
+        , globals =
+            [ Varying "vec3" "vLightDirection"
+            ] 
+        , splices =
+            [ """
+            vec3 lightDir = normalize(vLightDirection);
+"""
+            ]
+    }
+
+
 {-| normal mapping according to:
 <http://www.gamasutra.com/blogs/RobertBasler/20131122/205462/Three_Normal_Mapping_Techniques_Explained_For_the_Mathematically_Uninclined.php?print=1>
 -}
 fragmentNormal : Component
 fragmentNormal =
     { id = "lighting.fragmentNormal"
-    , dependencies = none
+    , dependencies =
+        Dependencies
+            [ fragment_lightDir
+            ]
     , provides = [ "gl_FragColor" ]
     , requires = []
     , globals =
@@ -281,8 +305,6 @@ fragmentNormal =
     , functions = []
     , splices =
          [ """
-            vec3 lightDir = normalize(vLightDirection);
-
             // Local normal, in tangent space
             vec3 pixelNormal = normalize(texture2D(textureNorm, vTexCoord).rgb*2.0 - 1.0);
             float lambert = max(dot(pixelNormal, lightDir), 0.0);
@@ -375,7 +397,10 @@ vertexNoNormal =
 fragmentNoNormal : Component
 fragmentNoNormal =
     { id = "lighting.fragmentNoNormal"
-    , dependencies = none
+    , dependencies =
+        Dependencies
+            [ fragment_lightDir
+            ]
     , provides = [ "gl_FragColor" ]
     , requires = []
     , globals =
@@ -388,8 +413,6 @@ fragmentNoNormal =
     , functions = []
     , splices =
         [ """
-            vec3 lightDir = normalize(vLightDirection);
-
             // lambert
             vec3 pixelNormal = normalize(vNormal);
             float lambert = max(dot(pixelNormal, lightDir), 0.0);
@@ -441,7 +464,10 @@ vertexSimple =
 fragmentSimple : Component
 fragmentSimple =
     { id = "lighting.fragmentSimple"
-    , dependencies = none
+    , dependencies =
+        Dependencies
+            [ fragment_lightDir
+            ]
     , provides = [ "gl_FragColor" ]
     , requires = []
     , globals =
@@ -452,8 +478,6 @@ fragmentSimple =
     , functions = []
     , splices =
         [ """
-            vec3 lightDir = normalize(vLightDirection);
-
             // lambert
             vec3 pixelNormal = normalize(vNormal);
             float lambert = max(dot(pixelNormal, lightDir), 0.0);
