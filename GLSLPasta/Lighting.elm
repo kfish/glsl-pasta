@@ -9,6 +9,7 @@ module GLSLPasta.Lighting exposing (..)
 @docs fragmentReflection, fragmentNormal, fragmentNoNormal, fragmentSimple
 -}
 
+import GLSLPasta.Math exposing (transposeMat3)
 import GLSLPasta.Types exposing (..)
 
 
@@ -17,7 +18,7 @@ import GLSLPasta.Types exposing (..)
 vertexPosition : Part
 vertexPosition =
     { id = "lighting.vertexPosition"
-    , dependencies = []
+    , dependencies = none
     , globals =
         [ Attribute "vec3" "position"
         , Uniform "mat4" "camera"
@@ -44,7 +45,7 @@ Generates vNormal
 vertexReflection : Part
 vertexReflection =
     { id = "lighting.vertexReflection"
-    , dependencies = [ "lighting.vertexPosition" ]
+    , dependencies = Dependencies [ vertexPosition ]
     , globals =
         [ Attribute "vec3" "normal"
         , Uniform "mat4" "mvMat"
@@ -72,7 +73,7 @@ Here are some relevant links:
 fragmentReflection : Part
 fragmentReflection =
     { id = "lighting.fragmentReflection"
-    , dependencies = []
+    , dependencies = none
     , globals =
         [ Uniform "sampler2D" "texture"
         , Varying "vec3" "vNormal"
@@ -98,7 +99,7 @@ fragmentReflection =
 vertexNormal : Part
 vertexNormal =
     { id = "lighting.vertexNormal"
-    , dependencies = [ "math.transposeMat3" ]
+    , dependencies = Dependencies [ transposeMat3 ]
     , globals =
         [ Attribute "vec3" "position"
         , Attribute "vec3" "normal"
@@ -142,7 +143,7 @@ vertexNormal =
 fragmentNormal : Part
 fragmentNormal =
     { id = "lighting.fragmentNormal"
-    , dependencies = []
+    , dependencies = none
     , globals =
          [ Uniform "sampler2D" "textureDiff"
          , Uniform "sampler2D" "textureNorm"
@@ -197,7 +198,7 @@ fragmentNormal =
 vertexNoNormal : Part
 vertexNoNormal =
     { id = "lighting.vertexNoNormal"
-    , dependencies = []
+    , dependencies = none
     , globals =
         [ Attribute "vec3" "position"
         , Attribute "vec3" "normal"
@@ -235,7 +236,7 @@ vertexNoNormal =
 fragmentNoNormal : Part
 fragmentNoNormal =
     { id = "lighting.fragmentNoNormal"
-    , dependencies = []
+    , dependencies = none
     , globals =
         [ Uniform "sampler2D" "textureDiff"
         , Varying "vec2" "vTexCoord"
@@ -289,7 +290,7 @@ fragmentNoNormal =
 vertexSimple : Part
 vertexSimple =
     { id = "lighting.vertexSimple"
-    , dependencies = []
+    , dependencies = none
     , globals =
         [ Attribute "vec3" "position"
         , Attribute "vec3" "normal"
@@ -325,7 +326,7 @@ vertexSimple =
 fragmentSimple : Part
 fragmentSimple =
     { id = "lighting.fragmentSimple"
-    , dependencies = []
+    , dependencies = none
     , globals =
         [ Varying "vec3" "vLightDirection"
         , Varying "vec3" "vViewDirection"

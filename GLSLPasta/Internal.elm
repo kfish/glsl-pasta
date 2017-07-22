@@ -1,6 +1,7 @@
 module GLSLPasta.Internal exposing (..)
 
 import Dict exposing (Dict)
+import List.Extra as List
 import GLSLPasta.Types exposing (..)
 
 
@@ -54,11 +55,12 @@ errorString error =
                     , ""
                     , "\t" ++ toString c.oldGlobal
                     ]
-
+{-
         MissingDependency m ->
             String.join "\n"
                 [ "Missing dependency " ++ m.dependency ++ ", required by " ++ m.newPartId
                 ]
+-}
 
 
 
@@ -226,7 +228,7 @@ symbolsGenerate symbols =
         |> List.map globalGenerate
         |> String.join "\n"
 
-
+{-
 checkDeps : Part -> List PartId -> ( List Error, List PartId )
 checkDeps part oldDeps =
     let
@@ -241,7 +243,6 @@ checkDeps part oldDeps =
             List.foldl f [] part.dependencies
     in
         ( errors, oldDeps ++ [ part.id ] )
-
 
 checkDependencies : List Part -> Result (List Error) String
 checkDependencies parts =
@@ -263,7 +264,22 @@ checkDependencies parts =
 
             _ ->
                 Err errors
+-}
 
+
+expandDependencies : List Part -> List Part
+expandDependencies parts =
+    let
+        expand : Part -> List Part
+        expand part =
+            case part.dependencies of
+                Dependencies deps ->
+                    List.concatMap expand deps ++ [ part ]
+
+    in
+        List.concatMap expand parts
+        |> List.uniqueBy .id
+        
 
 combineGlobals : List Part -> Result (List Error) String
 combineGlobals parts =
@@ -330,10 +346,13 @@ templateGenerate globals functions splices template =
 
 
 combineWith : String -> List Part -> Result (List Error) String
-combineWith template parts =
+combineWith template parts0 =
     let
-        dependenciesResult =
-            checkDependencies parts
+        parts =
+            expandDependencies parts0
+
+        -- dependenciesResult =
+        --     checkDependencies parts
 
         globalsResult =
             combineGlobals parts
@@ -353,12 +372,14 @@ combineWith template parts =
                 Err errors ->
                     errors
     in
-        case ( dependenciesResult, globalsResult, functionsResult, splicesResult ) of
-            ( Ok _, Ok globals, Ok functions, Ok splices ) ->
+        -- case ( dependenciesResult, globalsResult, functionsResult, splicesResult ) of
+        case ( globalsResult, functionsResult, splicesResult ) of
+            ( Ok globals, Ok functions, Ok splices ) ->
                 Ok (templateGenerate globals functions splices template)
 
             _ ->
                 Err
                     (List.concatMap extractErrors
-                        [ dependenciesResult, globalsResult, functionsResult, splicesResult ]
+                        -- [ dependenciesResult, globalsResult, functionsResult, splicesResult ]
+                        [ globalsResult, functionsResult, splicesResult ]
                     )

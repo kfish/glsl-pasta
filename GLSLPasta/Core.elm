@@ -14,7 +14,7 @@ import GLSLPasta.Types exposing (..)
 empty : Part
 empty =
     { id = "pasta.empty"
-    , dependencies = []
+    , dependencies = none
     , globals = []
     , functions = []
     , splices = []

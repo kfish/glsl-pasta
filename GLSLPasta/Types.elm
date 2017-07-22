@@ -7,6 +7,8 @@ module GLSLPasta.Types exposing (..)
 
 @docs Error, Function, Global, Name, Part, PartId, Splice, Type, Value
 
+@docs Dependencies, none
+
 -}
 
 
@@ -59,12 +61,21 @@ type alias Splice =
  -}
 type alias Part =
     { id : PartId -- used in error messages
-    , dependencies : List PartId
+    , dependencies : Dependencies
     , globals : List Global
     , functions : List Function
     , splices : List Splice
     }
 
+{-| Dependencies
+-}
+type Dependencies =
+    Dependencies (List Part)
+
+{-| Shorthand for no dependencies
+-}
+none : Dependencies
+none = Dependencies []
 
 {-| Errors returned during combine
  -}
@@ -76,7 +87,9 @@ type Error
         , newGlobal : Global
         , oldGlobal : Global
         }
+{-
     | MissingDependency
         { newPartId : PartId
         , dependency : PartId
         }
+-}
