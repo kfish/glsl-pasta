@@ -3,6 +3,7 @@ module GLSLPasta.Lighting exposing (..)
 import GLSLPasta exposing (..)
 import GLSLPasta.Types exposing (..)
 
+
 vertexPosition : Part
 vertexPosition =
     { id = "lighting.vertexPosition"
@@ -14,8 +15,7 @@ vertexPosition =
         ]
     , functions = []
     , splices =
-        [
-            """
+        [ """
             vec4 vertex4 = mvMat * vec4(position, 1.0);
             gl_Position = camera * vertex4;
             """
@@ -34,8 +34,7 @@ vertexReflection =
         ]
     , functions = []
     , splices =
-        [
-            """
+        [ """
             vNormal = vec3(mvMat * vec4(normal, 0.0));
             vec3 nm_z = normalize(vec3(vertex4));
             vec3 nm_x = cross(nm_z, vec3(0.0, 1.0, 0.0));

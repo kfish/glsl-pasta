@@ -1,14 +1,23 @@
 module GLSLPasta.Types exposing (..)
 
-
 -- Each Part is labelled with a PartId for use in error messages.
-type alias PartId = String
 
-type alias Name = String
 
-type alias Value = String
+type alias PartId =
+    String
 
-type alias Type = String
+
+type alias Name =
+    String
+
+
+type alias Value =
+    String
+
+
+type alias Type =
+    String
+
 
 type Global
     = Attribute Type Name
@@ -16,11 +25,18 @@ type Global
     | Varying Type Name
     | Const Type Name Value
 
-type alias Function = String
+
+type alias Function =
+    String
+
+
 
 -- if this is problematic, we could considder tracking the vars each splice affects, and
 -- sorting in dependency order (rather than just whatever order the Parts are given)
-type alias Splice = String
+
+
+type alias Splice =
+    String
 
 
 type alias Part =
@@ -30,6 +46,7 @@ type alias Part =
     , functions : List Function
     , splices : List Splice
     }
+
 
 type Error
     = GlobalConflict
@@ -43,4 +60,3 @@ type Error
         { newPartId : PartId
         , dependency : PartId
         }
-
