@@ -12,7 +12,7 @@ module GLSLPasta.Lighting exposing (..)
 @docs fragmentReflection, fragmentNormal, fragmentNoNormal, fragmentSimple
 
 # Fragment shader components
-@docs fragment_lightDir
+@docs fragment_lightDir, fragment_textureNormal, fragment_interpolatedNormal
 
 @docs vertex_clipPosition, lightenDistance
 -}
@@ -282,6 +282,43 @@ fragment_lightDir =
             ]
     }
 
+{-| Provides pixelNormal given by an input normal texture
+ -}
+fragment_textureNormal : Component
+fragment_textureNormal =
+    { empty
+        | id = "lighting.fragment_textureNormal"
+        , provides = [ "pixelNormal" ]
+        , globals =
+            [ Uniform "sampler2D" "textureNorm"
+            , Varying "vec2" "vTexCoord"
+            ] 
+        , splices =
+            [ """
+            // Local normal, in tangent space
+            vec3 pixelNormal = normalize(texture2D(textureNorm, vTexCoord).rgb*2.0 - 1.0);
+"""
+            ]
+    }
+
+{-| Provides pixelNormal by interpolating vertex normals
+ -}
+fragment_interpolatedNormal : Component
+fragment_interpolatedNormal =
+    { empty
+        | id = "lighting.fragment_interpolatedNormal"
+        , provides = [ "pixelNormal" ]
+        , globals =
+            [ Varying "vec3" "vNormal"
+            ] 
+        , splices =
+            [ """
+            vec3 pixelNormal = normalize(vNormal);
+"""
+            ]
+    }
+
+
 
 {-| normal mapping according to:
 <http://www.gamasutra.com/blogs/RobertBasler/20131122/205462/Three_Normal_Mapping_Techniques_Explained_For_the_Mathematically_Uninclined.php?print=1>
@@ -292,12 +329,12 @@ fragmentNormal =
     , dependencies =
         Dependencies
             [ fragment_lightDir
+            , fragment_textureNormal
             ]
     , provides = [ "gl_FragColor" ]
     , requires = []
     , globals =
          [ Uniform "sampler2D" "textureDiff"
-         , Uniform "sampler2D" "textureNorm"
          , Varying "vec2" "vTexCoord"
          , Varying "vec3" "vLightDirection"
          , Varying "vec3" "vViewDirection"
@@ -305,8 +342,6 @@ fragmentNormal =
     , functions = []
     , splices =
          [ """
-            // Local normal, in tangent space
-            vec3 pixelNormal = normalize(texture2D(textureNorm, vTexCoord).rgb*2.0 - 1.0);
             float lambert = max(dot(pixelNormal, lightDir), 0.0);
 
 
@@ -400,6 +435,7 @@ fragmentNoNormal =
     , dependencies =
         Dependencies
             [ fragment_lightDir
+            , fragment_interpolatedNormal
             ]
     , provides = [ "gl_FragColor" ]
     , requires = []
@@ -414,7 +450,6 @@ fragmentNoNormal =
     , splices =
         [ """
             // lambert
-            vec3 pixelNormal = normalize(vNormal);
             float lambert = max(dot(pixelNormal, lightDir), 0.0);
 
             // diffuse + lambert
@@ -467,6 +502,7 @@ fragmentSimple =
     , dependencies =
         Dependencies
             [ fragment_lightDir
+            , fragment_interpolatedNormal
             ]
     , provides = [ "gl_FragColor" ]
     , requires = []
@@ -479,7 +515,6 @@ fragmentSimple =
     , splices =
         [ """
             // lambert
-            vec3 pixelNormal = normalize(vNormal);
             float lambert = max(dot(pixelNormal, lightDir), 0.0);
 
             // diffuse + lambert
