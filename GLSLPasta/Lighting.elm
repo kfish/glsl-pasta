@@ -7,6 +7,8 @@ module GLSLPasta.Lighting exposing (..)
 
 # Fragment shaders
 @docs fragmentReflection, fragmentNormal, fragmentNoNormal, fragmentSimple
+
+@docs worldPosition, lightenDistance
 -}
 
 import GLSLPasta.Math exposing (transposeMat3)
@@ -118,7 +120,6 @@ vertexNormal =
         , Varying "vec2" "vTexCoord"
         , Varying "vec3" "vLightDirection"
         , Varying "vec3" "vViewDirection"
-        , Varying "vec4" "worldPosition"
         , Uniform "mat4" "modelViewProjectionMatrix"
         , Uniform "mat4" "modelMatrix"
         , Uniform "vec3" "lightPosition"
@@ -141,7 +142,46 @@ vertexNormal =
             vViewDirection = tbn*(viewPosition - posWorld);
             vTexCoord = texCoord;
             gl_Position = modelViewProjectionMatrix * pos;
+            """
+        ]
+    }
+
+{-| Forward the worldPosition to the fragment shader
+-}
+worldPosition : Component
+worldPosition =
+    { id = "lighting.worldPosition"
+    , dependencies = none
+    , provides = []
+    , requires = [ "gl_Position" ]
+    , globals =
+        [ Varying "vec4" "worldPosition"
+        ]
+    , functions = []
+    , splices =
+        [ """
             worldPosition = gl_Position;
+            """
+        ]
+    }
+
+
+{-| Red-shift, and lighten far objects
+-}
+lightenDistance : Component
+lightenDistance =
+    { id = "lighting.lightenDistance"
+    , dependencies = none
+    , provides = []
+    , requires = [ "gl_FragColor" ]
+    , globals =
+        [ Varying "vec4" "worldPosition"
+        ] 
+    , functions = []
+    , splices =
+        [ """
+            float lightenDistance = worldPosition.w * 0.01;
+            gl_FragColor *= 1.0 - lightenDistance * vec4(0.18, 0.21, 0.24, 0.15);
             """
         ]
     }
@@ -162,7 +202,6 @@ fragmentNormal =
          , Varying "vec2" "vTexCoord"
          , Varying "vec3" "vLightDirection"
          , Varying "vec3" "vViewDirection"
-         , Varying "vec4" "worldPosition"
          ]
     , functions = []
     , splices =
@@ -197,9 +236,6 @@ fragmentNormal =
             vec3 final_color = ambient + (diffuse + specular) * attenuation;
 
             gl_FragColor = vec4(final_color, 1.0);
-
-            float lightenDistance = worldPosition.w * 0.01;
-            gl_FragColor *= 1.0 - lightenDistance * vec4(0.18, 0.21, 0.24, 0.15);
             """
          ]
     }
@@ -221,7 +257,6 @@ vertexNoNormal =
         , Varying "vec3" "vLightDirection"
         , Varying "vec3" "vViewDirection"
         , Varying "vec3" "vNormal"
-        , Varying "vec4" "worldPosition"
         , Uniform "mat4" "modelViewProjectionMatrix"
         , Uniform "mat4" "modelMatrix"
         , Uniform "vec3" "lightPosition"
@@ -239,7 +274,6 @@ vertexNoNormal =
             // this is incorrect, it should use the normal matrix
             vNormal = mat3(modelMatrix) * normal;
             gl_Position = modelViewProjectionMatrix * pos;
-            worldPosition = gl_Position;
             """
         ]
     }
@@ -259,7 +293,6 @@ fragmentNoNormal =
         , Varying "vec3" "vLightDirection"
         , Varying "vec3" "vViewDirection"
         , Varying "vec3" "vNormal"
-        , Varying "vec4" "worldPosition"
         ]
     , functions = []
     , splices =
@@ -293,9 +326,6 @@ fragmentNoNormal =
             vec3 final_color = ambient + (diffuse + specular) * attenuation;
 
             gl_FragColor = vec4(final_color, 1.0);
-
-            float lightenDistance = worldPosition.w * 0.01;
-            gl_FragColor *= 1.0 - lightenDistance * vec4(0.18, 0.21, 0.24, 0.15);
             """
         ]
     }
@@ -315,7 +345,6 @@ vertexSimple =
         , Varying "vec3" "vLightDirection"
         , Varying "vec3" "vViewDirection"
         , Varying "vec3" "vNormal"
-        , Varying "vec4" "worldPosition"
         , Uniform "mat4" "modelViewProjectionMatrix"
         , Uniform "mat4" "modelMatrix"
         , Uniform "vec3" "lightPosition"
@@ -333,7 +362,6 @@ vertexSimple =
             vNormal = mat3(modelMatrix) * normal;
             vNormal = normal;
             gl_Position = modelViewProjectionMatrix * pos;
-            worldPosition = gl_Position;
             """
         ]
     }
@@ -351,7 +379,6 @@ fragmentSimple =
         [ Varying "vec3" "vLightDirection"
         , Varying "vec3" "vViewDirection"
         , Varying "vec3" "vNormal"
-        , Varying "vec4" "worldPosition"
         ]
     , functions = []
     , splices =
@@ -384,9 +411,6 @@ fragmentSimple =
 
             vec3 final_color = ambient + (diffuse + specular) * attenuation;
             gl_FragColor = vec4(final_color, 1.0);
-
-            float lightenDistance = worldPosition.w * 0.01;
-            gl_FragColor *= 1.0 - lightenDistance * vec4(0.18, 0.21, 0.24, 0.15);
             """
         ]
     }
