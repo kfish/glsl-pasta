@@ -138,7 +138,7 @@ Missing requirement diffuseColor, needed by lighting.fragment_diffuse: "<<GLSLPa
 : ()
 ()
     : ()
-`
+```
 
 `GLSLPasta.combine` will log errors to the Javascript console, and return an empty String.
 
