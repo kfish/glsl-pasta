@@ -12,7 +12,7 @@ module GLSLPasta.Lighting exposing (..)
 @docs fragmentReflection, fragmentNormal, fragmentNoNormal, fragmentSimple
 
 # Fragment shader components
-@docs fragment_lightDir, fragment_textureNormal, fragment_interpolatedNormal, fragment_lambert, fragment_lightIntensities, fragment_textureDiffuse, fragment_constantDiffuse, fragment_diffuse, fragment_ambient_02, fragment_ambient_03
+@docs fragment_lightDir, fragment_textureNormal, fragment_interpolatedNormal, fragment_lambert, fragment_lightIntensities, fragment_textureDiffuse, fragment_constantDiffuse, fragment_diffuse, fragment_ambient_02, fragment_ambient_03, fragment_specular
 
 @docs vertex_clipPosition, lightenDistance
 -}
@@ -453,6 +453,38 @@ fragment_ambient_03 =
     }
 
 
+{-| Provides specular
+ -}
+fragment_specular : Component
+fragment_specular =
+    { empty
+        | id = "lighting.fragment_specular"
+        , dependencies =
+            Dependencies
+                [ fragment_lightDir
+                , fragment_lightIntensities
+                ]
+        , provides = [ "specular" ]
+        , requires = [ "pixelNormal" ]
+        , globals =
+            [ Varying "vec3" "vLightDirection"
+            , Varying "vec3" "vViewDirection"
+            ] 
+        , splices =
+            [ """
+            // specular
+            float shininess = 32.0;
+            vec3 viewDir = normalize(vViewDirection);
+            vec3 reflectDir = reflect(-lightDir, pixelNormal);
+            vec3 halfwayDir = normalize(lightDir + viewDir);
+            float spec = pow(max(dot(pixelNormal, halfwayDir), 0.0), shininess);
+            vec3 specular = vec3(0.2) * spec * lightIntensities;
+
+"""
+            ]
+    }
+
+
 {-| normal mapping according to:
 <http://www.gamasutra.com/blogs/RobertBasler/20131122/205462/Three_Normal_Mapping_Techniques_Explained_For_the_Mathematically_Uninclined.php?print=1>
 -}
@@ -467,24 +499,16 @@ fragmentNormal =
             , fragment_textureDiffuse
             , fragment_diffuse
             , fragment_ambient_03
+            , fragment_specular
             ]
     , provides = [ "gl_FragColor" ]
     , requires = []
     , globals =
          [ Varying "vec3" "vLightDirection"
-         , Varying "vec3" "vViewDirection"
          ]
     , functions = []
     , splices =
          [ """
-            // specular
-            float shininess = 32.0;
-            vec3 viewDir = normalize(vViewDirection);
-            vec3 reflectDir = reflect(-lightDir, pixelNormal);
-            vec3 halfwayDir = normalize(lightDir + viewDir);
-            float spec = pow(max(dot(pixelNormal, halfwayDir), 0.0), shininess);
-            vec3 specular = vec3(0.2) * spec * lightIntensities;
-
             // attenuation
             float lightAttenuation = 0.3;
             float attenuation = 1.0 / (1.0 + lightAttenuation * pow(length(vLightDirection), 2.0));
@@ -564,27 +588,16 @@ fragmentNoNormal =
             , fragment_textureDiffuse
             , fragment_diffuse
             , fragment_ambient_03
+            , fragment_specular
             ]
     , provides = [ "gl_FragColor" ]
     , requires = []
     , globals =
-        [ Uniform "sampler2D" "textureDiff"
-        , Varying "vec2" "vTexCoord"
-        , Varying "vec3" "vLightDirection"
-        , Varying "vec3" "vViewDirection"
-        , Varying "vec3" "vNormal"
+        [ Varying "vec3" "vLightDirection"
         ]
     , functions = []
     , splices =
         [ """
-            // specular
-            float shininess = 32.0;
-            vec3 viewDir = normalize(vViewDirection);
-            vec3 reflectDir = reflect(-lightDir, pixelNormal);
-            vec3 halfwayDir = normalize(lightDir + viewDir);
-            float spec = pow(max(dot(pixelNormal, halfwayDir), 0.0), shininess);
-            vec3 specular = vec3(0.2) * spec * lightIntensities;
-
             // attenuation
             float lightAttenuation = 0.3;
             float attenuation = 1.0 / (1.0 + lightAttenuation * pow(length(vLightDirection), 2.0));
@@ -624,25 +637,16 @@ fragmentSimple =
             , fragment_constantDiffuse
             , fragment_diffuse
             , fragment_ambient_02
+            , fragment_specular
             ]
     , provides = [ "gl_FragColor" ]
     , requires = []
     , globals =
         [ Varying "vec3" "vLightDirection"
-        , Varying "vec3" "vViewDirection"
-        , Varying "vec3" "vNormal"
         ]
     , functions = []
     , splices =
         [ """
-            // specular
-            float shininess = 32.0;
-            vec3 viewDir = normalize(vViewDirection);
-            vec3 reflectDir = reflect(-lightDir, pixelNormal);
-            vec3 halfwayDir = normalize(lightDir + viewDir);
-            float spec = pow(max(dot(pixelNormal, halfwayDir), 0.0), shininess);
-            vec3 specular = vec3(0.2) * spec * lightIntensities;
-
             // attenuation
             float lightAttenuation = 0.3;
             float attenuation = 1.0 / (1.0 + lightAttenuation * pow(length(vLightDirection), 2.0));
