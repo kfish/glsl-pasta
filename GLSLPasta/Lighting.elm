@@ -534,24 +534,20 @@ fragment_phong =
 -}
 fragmentNormal : Component
 fragmentNormal =
-    { id = "lighting.fragmentNormal"
-    , dependencies =
-        Dependencies
-            [ fragment_lightDir
-            , fragment_textureNormal
-            , fragment_lambert
-            , fragment_textureDiffuse
-            , fragment_diffuse
-            , fragment_ambient_03
-            , fragment_specular
-            , fragment_attenuation
-            , fragment_phong
-            ]
-    , provides = []
-    , requires = []
-    , globals = []
-    , functions = []
-    , splices = []
+    { empty
+        | id = "lighting.fragmentNormal"
+        , dependencies =
+            Dependencies
+                [ fragment_lightDir
+                , fragment_textureNormal
+                , fragment_lambert
+                , fragment_textureDiffuse
+                , fragment_diffuse
+                , fragment_ambient_03
+                , fragment_specular
+                , fragment_attenuation
+                , fragment_phong
+                ]
     }
 
 
@@ -613,24 +609,20 @@ vertexNoNormal =
 -}
 fragmentNoNormal : Component
 fragmentNoNormal =
-    { id = "lighting.fragmentNoNormal"
-    , dependencies =
-        Dependencies
-            [ fragment_lightDir
-            , fragment_interpolatedNormal
-            , fragment_lambert
-            , fragment_textureDiffuse
-            , fragment_diffuse
-            , fragment_ambient_03
-            , fragment_specular
-            , fragment_attenuation
-            , fragment_phong
-            ]
-    , provides = []
-    , requires = []
-    , globals = []
-    , functions = []
-    , splices = []
+    { empty
+        | id = "lighting.fragmentNoNormal"
+        , dependencies =
+            Dependencies
+                [ fragment_lightDir
+                , fragment_interpolatedNormal
+                , fragment_lambert
+                , fragment_textureDiffuse
+                , fragment_diffuse
+                , fragment_ambient_03
+                , fragment_specular
+                , fragment_attenuation
+                , fragment_phong
+                ]
     }
 
 
@@ -652,22 +644,18 @@ vertexSimple =
 -}
 fragmentSimple : Component
 fragmentSimple =
-    { id = "lighting.fragmentSimple"
-    , dependencies =
-        Dependencies
-            [ fragment_lightDir
-            , fragment_interpolatedNormal
-            , fragment_lambert
-            , fragment_constantDiffuse
-            , fragment_diffuse
-            , fragment_ambient_02
-            , fragment_specular
-            , fragment_attenuation
-            , fragment_phong
-            ]
-    , provides = []
-    , requires = []
-    , globals = []
-    , functions = []
-    , splices = []
+    { empty
+        | id = "lighting.fragmentSimple"
+        , dependencies =
+            Dependencies
+                [ fragment_lightDir
+                , fragment_interpolatedNormal
+                , fragment_lambert
+                , fragment_constantDiffuse
+                , fragment_diffuse
+                , fragment_ambient_02
+                , fragment_specular
+                , fragment_attenuation
+                , fragment_phong
+                ]
     }
