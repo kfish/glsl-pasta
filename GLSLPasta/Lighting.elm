@@ -12,7 +12,7 @@ module GLSLPasta.Lighting exposing (..)
 @docs fragmentReflection, fragmentNormal, fragmentNoNormal, fragmentSimple
 
 # Fragment shader components
-@docs fragment_lightDir, fragment_textureNormal, fragment_interpolatedNormal, fragment_lambert, fragment_lightIntensities, fragment_textureDiffuse, fragment_constantDiffuse, fragment_diffuse
+@docs fragment_lightDir, fragment_textureNormal, fragment_interpolatedNormal, fragment_lambert, fragment_lightIntensities, fragment_textureDiffuse, fragment_constantDiffuse, fragment_diffuse, fragment_ambient_02, fragment_ambient_03
 
 @docs vertex_clipPosition, lightenDistance
 -}
@@ -418,6 +418,40 @@ fragment_diffuse =
     }
 
 
+{-| Provides constant ambient
+ -}
+fragment_ambient_02 : Component
+fragment_ambient_02 =
+    { empty
+        | id = "lighting.fragment_ambient_02"
+        , provides = [ "ambient" ]
+        , requires = [ "diffuseColor" ]
+        , globals = []
+        , splices =
+            [ """
+            // ambient
+            vec3 ambient = 0.2 * diffuseColor;
+"""
+            ]
+    }
+
+{-| Provides constant ambient
+ -}
+fragment_ambient_03 : Component
+fragment_ambient_03 =
+    { empty
+        | id = "lighting.fragment_ambient_03"
+        , provides = [ "ambient" ]
+        , requires = [ "diffuseColor" ]
+        , globals = []
+        , splices =
+            [ """
+            // ambient
+            vec3 ambient = 0.3 * diffuseColor;
+"""
+            ]
+    }
+
 
 {-| normal mapping according to:
 <http://www.gamasutra.com/blogs/RobertBasler/20131122/205462/Three_Normal_Mapping_Techniques_Explained_For_the_Mathematically_Uninclined.php?print=1>
@@ -432,6 +466,7 @@ fragmentNormal =
             , fragment_lambert
             , fragment_textureDiffuse
             , fragment_diffuse
+            , fragment_ambient_03
             ]
     , provides = [ "gl_FragColor" ]
     , requires = []
@@ -442,9 +477,6 @@ fragmentNormal =
     , functions = []
     , splices =
          [ """
-            // ambient
-            vec3 ambient = 0.3 * diffuseColor;
-
             // specular
             float shininess = 32.0;
             vec3 viewDir = normalize(vViewDirection);
@@ -531,6 +563,7 @@ fragmentNoNormal =
             , fragment_lambert
             , fragment_textureDiffuse
             , fragment_diffuse
+            , fragment_ambient_03
             ]
     , provides = [ "gl_FragColor" ]
     , requires = []
@@ -544,9 +577,6 @@ fragmentNoNormal =
     , functions = []
     , splices =
         [ """
-            // ambient
-            vec3 ambient = 0.3 * diffuseColor;
-
             // specular
             float shininess = 32.0;
             vec3 viewDir = normalize(vViewDirection);
@@ -593,6 +623,7 @@ fragmentSimple =
             , fragment_lambert
             , fragment_constantDiffuse
             , fragment_diffuse
+            , fragment_ambient_02
             ]
     , provides = [ "gl_FragColor" ]
     , requires = []
@@ -604,9 +635,6 @@ fragmentSimple =
     , functions = []
     , splices =
         [ """
-            // ambient
-            vec3 ambient = 0.2 * diffuseColor;
-
             // specular
             float shininess = 32.0;
             vec3 viewDir = normalize(vViewDirection);
