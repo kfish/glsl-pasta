@@ -131,13 +131,10 @@ this requirement is not met?
 ```elm
 > import GLSLPasta exposing (..)
 > import GLSLPasta.Lighting exposing (..)
-> print = flip Debug.log ()
-<function> : String -> ()
-> print <| combine [ fragment_diffuse ]
+> combine [ fragment_diffuse ]
 Missing requirement diffuseColor, needed by lighting.fragment_diffuse: "<<GLSLPasta>>"
-: ()
-()
-    : ()
+""
+    : String
 ```
 
 `GLSLPasta.combine` will log errors to the Javascript console, and return an empty String.
