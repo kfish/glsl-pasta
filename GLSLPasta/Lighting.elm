@@ -2,19 +2,28 @@ module GLSLPasta.Lighting exposing (..)
 
 {-| Basic lighting
 
+
 # Complete vertex shaders
+
 @docs vertexReflection, vertexNormal, vertexNoNormal, vertexSimple
 
+
 # Vertex shader components
+
 @docs vertex_position4, vertex_gl_Position, vertex_vTexCoord, vertex_SphericalEnvironmentMapping, vertexTBN, vertexNoTangent
 
+
 # Complete fragment shaders
+
 @docs fragmentReflection, fragmentNormal, fragmentNoNormal, fragmentSimple
 
+
 # Fragment shader components
+
 @docs fragment_lightDir, fragment_textureNormal, fragment_interpolatedNormal, fragment_lambert, fragment_lightIntensities, fragment_textureDiffuse, fragment_constantDiffuse, fragment_diffuse, fragment_ambient_02, fragment_ambient_03, fragment_specular, fragment_attenuation, fragment_phong
 
 @docs vertex_clipPosition, lightenDistance
+
 -}
 
 import GLSLPasta.Core exposing (..)
@@ -23,27 +32,27 @@ import GLSLPasta.Types exposing (..)
 
 
 {-| Generates position4
- -}
+-}
 vertex_position4 : Component
 vertex_position4 =
     { empty
         | id = "lighting.vertex_position4"
-    , provides =
-        [ "position4"
-        ]
-    , globals =
-        [ Attribute "vec3" "position"
-        ]
-    , splices =
-        [ """
+        , provides =
+            [ "position4"
+            ]
+        , globals =
+            [ Attribute "vec3" "position"
+            ]
+        , splices =
+            [ """
             vec4 position4 = vec4(position, 1.0);
             """
-        ]
+            ]
     }
 
 
 {-| Generates gl_Position
- -}
+-}
 vertex_gl_Position : Component
 vertex_gl_Position =
     { empty
@@ -68,11 +77,13 @@ vertex_gl_Position =
 
 {-| This shader uses Spherical Environment Mapping (SEM).
 Here are some relevant links:
-* [very cool demo](https://www.clicktorelease.com/code/spherical-normal-mapping/#)
-* <https://www.clicktorelease.com/blog/creating-spherical-environment-mapping-shader>
-* <http://www.ozone3d.net/tutorials/glsl_texturing_p04.php>
+
+  - [very cool demo](https://www.clicktorelease.com/code/spherical-normal-mapping/#)
+  - <https://www.clicktorelease.com/blog/creating-spherical-environment-mapping-shader>
+  - <http://www.ozone3d.net/tutorials/glsl_texturing_p04.php>
 
 Generates vNormal
+
 -}
 vertex_SphericalEnvironmentMapping : Component
 vertex_SphericalEnvironmentMapping =
@@ -103,9 +114,11 @@ vertex_SphericalEnvironmentMapping =
 
 {-| This shader uses Spherical Environment Mapping (SEM).
 Here are some relevant links:
-* [very cool demo](https://www.clicktorelease.com/code/spherical-normal-mapping/#)
-* <https://www.clicktorelease.com/blog/creating-spherical-environment-mapping-shader>
-* <http://www.ozone3d.net/tutorials/glsl_texturing_p04.php>
+
+  - [very cool demo](https://www.clicktorelease.com/code/spherical-normal-mapping/#)
+  - <https://www.clicktorelease.com/blog/creating-spherical-environment-mapping-shader>
+  - <http://www.ozone3d.net/tutorials/glsl_texturing_p04.php>
+
 -}
 vertexReflection : Component
 vertexReflection =
@@ -121,9 +134,11 @@ vertexReflection =
 
 {-| This shader uses Spherical Environment Mapping (SEM).
 Here are some relevant links:
-* [very cool demo](https://www.clicktorelease.com/code/spherical-normal-mapping/#)
-* <https://www.clicktorelease.com/blog/creating-spherical-environment-mapping-shader>
-* <http://www.ozone3d.net/tutorials/glsl_texturing_p04.php>
+
+  - [very cool demo](https://www.clicktorelease.com/code/spherical-normal-mapping/#)
+  - <https://www.clicktorelease.com/blog/creating-spherical-environment-mapping-shader>
+  - <http://www.ozone3d.net/tutorials/glsl_texturing_p04.php>
+
 -}
 fragmentReflection : Component
 fragmentReflection =
@@ -182,9 +197,9 @@ vertexTBN =
                 , transposeMat3
                 ]
         , provides =
-                [ "vLightDirection"
-                , "vViewDirection" 
-                ]
+            [ "vLightDirection"
+            , "vViewDirection"
+            ]
         , globals =
             [ Attribute "vec3" "normal"
             , Attribute "vec4" "tangent"
@@ -255,7 +270,7 @@ lightenDistance =
         , requires = [ "gl_FragColor" ]
         , globals =
             [ Varying "vec4" "clipPosition"
-            ] 
+            ]
         , splices =
             [ """
             float lightenDistance = clipPosition.w * 0.01;
@@ -266,7 +281,7 @@ lightenDistance =
 
 
 {-| Provides lightDir
- -}
+-}
 fragment_lightDir : Component
 fragment_lightDir =
     { empty
@@ -274,7 +289,7 @@ fragment_lightDir =
         , provides = [ "lightDir" ]
         , globals =
             [ Varying "vec3" "vLightDirection"
-            ] 
+            ]
         , splices =
             [ """
             vec3 lightDir = normalize(vLightDirection);
@@ -282,8 +297,9 @@ fragment_lightDir =
             ]
     }
 
+
 {-| Provides pixelNormal given by an input normal texture
- -}
+-}
 fragment_textureNormal : Component
 fragment_textureNormal =
     { empty
@@ -292,7 +308,7 @@ fragment_textureNormal =
         , globals =
             [ Uniform "sampler2D" "textureNorm"
             , Varying "vec2" "vTexCoord"
-            ] 
+            ]
         , splices =
             [ """
             // Local normal, in tangent space
@@ -303,7 +319,7 @@ fragment_textureNormal =
 
 
 {-| Provides pixelNormal by interpolating vertex normals
- -}
+-}
 fragment_interpolatedNormal : Component
 fragment_interpolatedNormal =
     { empty
@@ -311,7 +327,7 @@ fragment_interpolatedNormal =
         , provides = [ "pixelNormal" ]
         , globals =
             [ Varying "vec3" "vNormal"
-            ] 
+            ]
         , splices =
             [ """
             vec3 pixelNormal = normalize(vNormal);
@@ -321,7 +337,7 @@ fragment_interpolatedNormal =
 
 
 {-| Provides lambert, given some pixelNormal
- -}
+-}
 fragment_lambert : Component
 fragment_lambert =
     { empty
@@ -344,7 +360,7 @@ fragment_lambert =
 {-| Provides constant lightIntensities
 -}
 fragment_lightIntensities : Component
-fragment_lightIntensities  =
+fragment_lightIntensities =
     { empty
         | id = "lighting.fragment_lightIntensities"
         , provides = [ "lightIntensities" ]
@@ -358,7 +374,7 @@ fragment_lightIntensities  =
 
 
 {-| Provides diffuseColor given by an input diffuse texture
- -}
+-}
 fragment_textureDiffuse : Component
 fragment_textureDiffuse =
     { empty
@@ -367,7 +383,7 @@ fragment_textureDiffuse =
         , globals =
             [ Uniform "sampler2D" "textureDiff"
             , Varying "vec2" "vTexCoord"
-            ] 
+            ]
         , splices =
             [ """
             vec3 diffuseColor = texture2D(textureDiff, vTexCoord).rgb;
@@ -377,7 +393,7 @@ fragment_textureDiffuse =
 
 
 {-| Provides a constant diffuseColor
- -}
+-}
 fragment_constantDiffuse : Component
 fragment_constantDiffuse =
     { empty
@@ -385,7 +401,7 @@ fragment_constantDiffuse =
         , provides = [ "diffuseColor" ]
         , globals =
             [ Varying "vec2" "vTexCoord"
-            ] 
+            ]
         , splices =
             [ """
             vec3 diffuseColor = vec3(0.3, 0.2, 0.95);
@@ -394,9 +410,8 @@ fragment_constantDiffuse =
     }
 
 
-
 {-| Provides diffuse, given some diffuseColor
- -}
+-}
 fragment_diffuse : Component
 fragment_diffuse =
     { empty
@@ -419,7 +434,7 @@ fragment_diffuse =
 
 
 {-| Provides constant ambient
- -}
+-}
 fragment_ambient_02 : Component
 fragment_ambient_02 =
     { empty
@@ -435,8 +450,9 @@ fragment_ambient_02 =
             ]
     }
 
+
 {-| Provides constant ambient
- -}
+-}
 fragment_ambient_03 : Component
 fragment_ambient_03 =
     { empty
@@ -454,7 +470,7 @@ fragment_ambient_03 =
 
 
 {-| Provides specular
- -}
+-}
 fragment_specular : Component
 fragment_specular =
     { empty
@@ -469,7 +485,7 @@ fragment_specular =
         , globals =
             [ Varying "vec3" "vLightDirection"
             , Varying "vec3" "vViewDirection"
-            ] 
+            ]
         , splices =
             [ """
             // specular
@@ -485,7 +501,7 @@ fragment_specular =
 
 
 {-| Provides attenuation
- -}
+-}
 fragment_attenuation : Component
 fragment_attenuation =
     { empty
@@ -494,7 +510,7 @@ fragment_attenuation =
         , provides = [ "attenuation" ]
         , globals =
             [ Varying "vec3" "vLightDirection"
-            ] 
+            ]
         , splices =
             [ """
             // attenuation
@@ -506,8 +522,10 @@ fragment_attenuation =
 
 
 {-| Provides gl_FragColor, according to the Phong shading model
- - https://en.wikipedia.org/wiki/Phong_reflection_model
- -}
+
+  - <https://en.wikipedia.org/wiki/Phong_reflection_model>
+
+-}
 fragment_phong : Component
 fragment_phong =
     { empty
@@ -521,11 +539,11 @@ fragment_phong =
             , "attenuation"
             ]
         , splices =
-         [ """
+            [ """
             vec3 final_color = ambient + (diffuse + specular) * attenuation;
             gl_FragColor = vec4(final_color, 1.0);
             """
-         ]
+            ]
     }
 
 
@@ -562,23 +580,23 @@ vertexNoTangent =
                 [ vertex_position4
                 ]
         , provides =
-                [ "vLightDirection"
-                , "vViewDirection" 
-                , "vNormal"
-                ]
-    , requires = []
-    , globals =
-        [ Attribute "vec3" "normal"
-        , Varying "vec3" "vLightDirection"
-        , Varying "vec3" "vViewDirection"
-        , Varying "vec3" "vNormal"
-        , Uniform "mat4" "modelMatrix"
-        , Uniform "vec3" "lightPosition"
-        , Uniform "vec3" "viewPosition"
-        ]
-    , functions = []
-    , splices =
-        [ """
+            [ "vLightDirection"
+            , "vViewDirection"
+            , "vNormal"
+            ]
+        , requires = []
+        , globals =
+            [ Attribute "vec3" "normal"
+            , Varying "vec3" "vLightDirection"
+            , Varying "vec3" "vViewDirection"
+            , Varying "vec3" "vNormal"
+            , Uniform "mat4" "modelMatrix"
+            , Uniform "vec3" "lightPosition"
+            , Uniform "vec3" "viewPosition"
+            ]
+        , functions = []
+        , splices =
+            [ """
             vec3 posWorld = (modelMatrix * position4).xyz;
 
             vLightDirection = lightPosition - posWorld;
@@ -586,7 +604,7 @@ vertexNoTangent =
             // this is incorrect, it should use the normal matrix
             vNormal = mat3(modelMatrix) * normal;
             """
-        ]
+            ]
     }
 
 

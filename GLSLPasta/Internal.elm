@@ -55,6 +55,7 @@ errorString error =
                     , ""
                     , "\t" ++ toString c.oldGlobal
                     ]
+
         MissingRequirement m ->
             String.join "\n"
                 [ "Missing requirement " ++ m.requirement ++ ", needed by " ++ m.componentId
@@ -273,11 +274,10 @@ expandDependencies components =
             case component.dependencies of
                 Dependencies deps ->
                     List.concatMap expand deps ++ [ component ]
-
     in
         List.concatMap expand components
-        |> List.uniqueBy .id
-        
+            |> List.uniqueBy .id
+
 
 combineGlobals : List Component -> Result (List Error) String
 combineGlobals components =

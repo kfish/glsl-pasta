@@ -1,7 +1,7 @@
 module GLSLPasta.Types exposing (..)
 
-
 {-| GLSLPasta Types
+
 
 # Types
 
@@ -13,46 +13,50 @@ module GLSLPasta.Types exposing (..)
 
 
 {-| An identifier for a Component
-  Each Component is labelled with a ComponentId for use in error messages.
+Each Component is labelled with a ComponentId for use in error messages.
 -}
 type alias ComponentId =
     String
+
 
 {-| An abstract feature provided by a Component, often the name of a
 variable.
 
 For example, a shader that initially sets gl_FragColor might specify
 
-    provides = [ "gl_FragColor" ]
+    provides =
+        [ "gl_FragColor" ]
 
 and another shader that modifies gl_FragColor might specify
 
-    requires = [ "gl_FragColor" ]
+    requires =
+        [ "gl_FragColor" ]
 
 -}
 type alias Feature =
     String
 
+
 {-| The name of a global
- -}
+-}
 type alias Name =
     String
 
 
 {-| The value of a global constant
- -}
+-}
 type alias Value =
     String
 
 
 {-| The type of a global
- -}
+-}
 type alias Type =
     String
 
 
 {-| A Global
- -}
+-}
 type Global
     = Attribute Type Name
     | Uniform Type Name
@@ -61,19 +65,19 @@ type Global
 
 
 {-| Text for a function
- -}
+-}
 type alias Function =
     String
 
 
 {-| Text to splice into main()
- -}
+-}
 type alias Splice =
     String
 
 
 {-| A Component
- -}
+-}
 type alias Component =
     { id : ComponentId -- used in error messages
     , dependencies : Dependencies
@@ -84,18 +88,22 @@ type alias Component =
     , splices : List Splice
     }
 
+
 {-| Dependencies
 -}
-type Dependencies =
-    Dependencies (List Component)
+type Dependencies
+    = Dependencies (List Component)
+
 
 {-| Shorthand for no dependencies
 -}
 none : Dependencies
-none = Dependencies []
+none =
+    Dependencies []
+
 
 {-| Errors returned during combine
- -}
+-}
 type Error
     = GlobalConflict
         { what : String

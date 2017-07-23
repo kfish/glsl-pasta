@@ -26,10 +26,9 @@ logErrors errors =
         Tuple.second ( Debug.log s "<<GLSLPasta>>", "" )
 
 
-
 {-| Combine Components into the code for a Shader, that can be passed to WebGL.unsafeShader.
 Errors are logged tot he Javascript console.
- -}
+-}
 combine : List Component -> String
 combine components =
     let
@@ -45,7 +44,7 @@ combine components =
 
 
 {-| The default template used by combine
- -}
+-}
 defaultTemplate : String
 defaultTemplate =
     """
@@ -62,8 +61,9 @@ void main()
 
     """
 
+
 {-| Combine using a given template
- -}
+-}
 combineWith : String -> List Component -> Result (List Error) String
 combineWith =
     Internal.combineWith
