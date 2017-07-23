@@ -12,7 +12,7 @@ module GLSLPasta.Lighting exposing (..)
 @docs fragmentReflection, fragmentNormal, fragmentNoNormal, fragmentSimple
 
 # Fragment shader components
-@docs fragment_lightDir, fragment_textureNormal, fragment_interpolatedNormal, fragment_lambert, fragment_lightIntensities, fragment_textureDiffuse, fragment_constantDiffuse, fragment_diffuse, fragment_ambient_02, fragment_ambient_03, fragment_specular
+@docs fragment_lightDir, fragment_textureNormal, fragment_interpolatedNormal, fragment_lambert, fragment_lightIntensities, fragment_textureDiffuse, fragment_constantDiffuse, fragment_diffuse, fragment_ambient_02, fragment_ambient_03, fragment_specular, fragment_attenuation
 
 @docs vertex_clipPosition, lightenDistance
 -}
@@ -479,7 +479,27 @@ fragment_specular =
             vec3 halfwayDir = normalize(lightDir + viewDir);
             float spec = pow(max(dot(pixelNormal, halfwayDir), 0.0), shininess);
             vec3 specular = vec3(0.2) * spec * lightIntensities;
+"""
+            ]
+    }
 
+
+{-| Provides attenuation
+ -}
+fragment_attenuation : Component
+fragment_attenuation =
+    { empty
+        | id = "lighting.fragment_attenuation"
+        , dependencies = none
+        , provides = [ "attenuation" ]
+        , globals =
+            [ Varying "vec3" "vLightDirection"
+            ] 
+        , splices =
+            [ """
+            // attenuation
+            float lightAttenuation = 0.3;
+            float attenuation = 1.0 / (1.0 + lightAttenuation * pow(length(vLightDirection), 2.0));
 """
             ]
     }
@@ -500,19 +520,14 @@ fragmentNormal =
             , fragment_diffuse
             , fragment_ambient_03
             , fragment_specular
+            , fragment_attenuation
             ]
     , provides = [ "gl_FragColor" ]
     , requires = []
-    , globals =
-         [ Varying "vec3" "vLightDirection"
-         ]
+    , globals = []
     , functions = []
     , splices =
          [ """
-            // attenuation
-            float lightAttenuation = 0.3;
-            float attenuation = 1.0 / (1.0 + lightAttenuation * pow(length(vLightDirection), 2.0));
-
             vec3 final_color = ambient + (diffuse + specular) * attenuation;
 
             gl_FragColor = vec4(final_color, 1.0);
@@ -589,19 +604,14 @@ fragmentNoNormal =
             , fragment_diffuse
             , fragment_ambient_03
             , fragment_specular
+            , fragment_attenuation
             ]
     , provides = [ "gl_FragColor" ]
     , requires = []
-    , globals =
-        [ Varying "vec3" "vLightDirection"
-        ]
+    , globals = []
     , functions = []
     , splices =
         [ """
-            // attenuation
-            float lightAttenuation = 0.3;
-            float attenuation = 1.0 / (1.0 + lightAttenuation * pow(length(vLightDirection), 2.0));
-
             vec3 final_color = ambient + (diffuse + specular) * attenuation;
 
             gl_FragColor = vec4(final_color, 1.0);
@@ -638,19 +648,14 @@ fragmentSimple =
             , fragment_diffuse
             , fragment_ambient_02
             , fragment_specular
+            , fragment_attenuation
             ]
     , provides = [ "gl_FragColor" ]
     , requires = []
-    , globals =
-        [ Varying "vec3" "vLightDirection"
-        ]
+    , globals = []
     , functions = []
     , splices =
         [ """
-            // attenuation
-            float lightAttenuation = 0.3;
-            float attenuation = 1.0 / (1.0 + lightAttenuation * pow(length(vLightDirection), 2.0));
-
             vec3 final_color = ambient + (diffuse + specular) * attenuation;
             gl_FragColor = vec4(final_color, 1.0);
             """
