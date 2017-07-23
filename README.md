@@ -29,7 +29,7 @@ You combine a list of components together with a call to `GLSLPasta.combine`, wh
 pull in dependencies and will check that requirements are satisfied:
 
 ```elm
-   combine : List Part -> String
+   combine : List Component -> String
 ```
 
 the output of which you can pass to `WebGL.unsafeShader`.
