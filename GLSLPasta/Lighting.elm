@@ -12,7 +12,7 @@ module GLSLPasta.Lighting exposing (..)
 @docs fragmentReflection, fragmentNormal, fragmentNoNormal, fragmentSimple
 
 # Fragment shader components
-@docs fragment_lightDir, fragment_textureNormal, fragment_interpolatedNormal, fragment_lambert, fragment_lightIntensities, fragment_textureDiffuse, fragment_constantDiffuse, fragment_diffuse, fragment_ambient_02, fragment_ambient_03, fragment_specular, fragment_attenuation
+@docs fragment_lightDir, fragment_textureNormal, fragment_interpolatedNormal, fragment_lambert, fragment_lightIntensities, fragment_textureDiffuse, fragment_constantDiffuse, fragment_diffuse, fragment_ambient_02, fragment_ambient_03, fragment_specular, fragment_attenuation, fragment_phong
 
 @docs vertex_clipPosition, lightenDistance
 -}
@@ -505,6 +505,30 @@ fragment_attenuation =
     }
 
 
+{-| Provides gl_FragColor, according to the Phong shading model
+ - https://en.wikipedia.org/wiki/Phong_reflection_model
+ -}
+fragment_phong : Component
+fragment_phong =
+    { empty
+        | id = "lighting.fragment_phong"
+        , dependencies = none
+        , provides = [ "gl_FragColor" ]
+        , requires =
+            [ "ambient"
+            , "diffuse"
+            , "specular"
+            , "attenuation"
+            ]
+        , splices =
+         [ """
+            vec3 final_color = ambient + (diffuse + specular) * attenuation;
+            gl_FragColor = vec4(final_color, 1.0);
+            """
+         ]
+    }
+
+
 {-| normal mapping according to:
 <http://www.gamasutra.com/blogs/RobertBasler/20131122/205462/Three_Normal_Mapping_Techniques_Explained_For_the_Mathematically_Uninclined.php?print=1>
 -}
@@ -521,18 +545,13 @@ fragmentNormal =
             , fragment_ambient_03
             , fragment_specular
             , fragment_attenuation
+            , fragment_phong
             ]
-    , provides = [ "gl_FragColor" ]
+    , provides = []
     , requires = []
     , globals = []
     , functions = []
-    , splices =
-         [ """
-            vec3 final_color = ambient + (diffuse + specular) * attenuation;
-
-            gl_FragColor = vec4(final_color, 1.0);
-            """
-         ]
+    , splices = []
     }
 
 
@@ -605,18 +624,13 @@ fragmentNoNormal =
             , fragment_ambient_03
             , fragment_specular
             , fragment_attenuation
+            , fragment_phong
             ]
-    , provides = [ "gl_FragColor" ]
+    , provides = []
     , requires = []
     , globals = []
     , functions = []
-    , splices =
-        [ """
-            vec3 final_color = ambient + (diffuse + specular) * attenuation;
-
-            gl_FragColor = vec4(final_color, 1.0);
-            """
-        ]
+    , splices = []
     }
 
 
@@ -649,15 +663,11 @@ fragmentSimple =
             , fragment_ambient_02
             , fragment_specular
             , fragment_attenuation
+            , fragment_phong
             ]
-    , provides = [ "gl_FragColor" ]
+    , provides = []
     , requires = []
     , globals = []
     , functions = []
-    , splices =
-        [ """
-            vec3 final_color = ambient + (diffuse + specular) * attenuation;
-            gl_FragColor = vec4(final_color, 1.0);
-            """
-        ]
+    , splices = []
     }
