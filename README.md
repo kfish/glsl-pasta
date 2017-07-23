@@ -225,3 +225,8 @@ and `__PASTA_SPLICES__` is replaced with all the splices from all the parts, in 
 Note that the functions and splices are replaced as arbitrary strings, and glsl-pasta makes no
 attempt to parse or sanity-check these.
 
+
+## Credits
+
+The code in GLSLPasta.Lighting is extracted from @Zinggi's example code in
+[elm-object-loader](https://github.com/Zinggi/elm-obj-loader/tree/master/examples).
