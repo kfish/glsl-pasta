@@ -1,7 +1,6 @@
 module GLSLPasta.Types exposing (..)
 
-{-| GLSLPasta Types
-
+{-|
 
 # Types
 

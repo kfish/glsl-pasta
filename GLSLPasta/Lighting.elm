@@ -1,7 +1,6 @@
 module GLSLPasta.Lighting exposing (..)
 
-{-| Basic lighting
-
+{-|
 
 # Complete vertex shaders
 

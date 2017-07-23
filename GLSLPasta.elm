@@ -5,7 +5,7 @@ module GLSLPasta
         , defaultTemplate
         )
 
-{-| GLSLPasta
+{-|
 
 @docs combine, combineWith
 
@@ -27,7 +27,7 @@ logErrors errors =
 
 
 {-| Combine Components into the code for a Shader, that can be passed to WebGL.unsafeShader.
-Errors are logged tot he Javascript console.
+Errors are logged to the Javascript console.
 -}
 combine : List Component -> String
 combine components =

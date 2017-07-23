@@ -1,6 +1,6 @@
 module GLSLPasta.Core exposing (..)
 
-{-| Core components
+{-|
 
 @docs empty
 
