@@ -12,7 +12,7 @@ module GLSLPasta.Lighting exposing (..)
 @docs fragmentReflection, fragmentNormal, fragmentNoNormal, fragmentSimple
 
 # Fragment shader components
-@docs fragment_lightDir, fragment_textureNormal, fragment_interpolatedNormal, fragment_lambert
+@docs fragment_lightDir, fragment_textureNormal, fragment_interpolatedNormal, fragment_lambert, fragment_lightIntensities, fragment_textureDiffuse, fragment_constantDiffuse, fragment_diffuse
 
 @docs vertex_clipPosition, lightenDistance
 -}
@@ -341,6 +341,84 @@ fragment_lambert =
     }
 
 
+{-| Provides constant lightIntensities
+-}
+fragment_lightIntensities : Component
+fragment_lightIntensities  =
+    { empty
+        | id = "lighting.fragment_lightIntensities"
+        , provides = [ "lightIntensities" ]
+        , globals = []
+        , splices =
+            [ """
+            vec3 lightIntensities = vec3(1.5, 1.0, 1.0);
+"""
+            ]
+    }
+
+
+{-| Provides diffuseColor given by an input diffuse texture
+ -}
+fragment_textureDiffuse : Component
+fragment_textureDiffuse =
+    { empty
+        | id = "lighting.fragment_textureDiffuse"
+        , provides = [ "diffuseColor" ]
+        , globals =
+            [ Uniform "sampler2D" "textureDiff"
+            , Varying "vec2" "vTexCoord"
+            ] 
+        , splices =
+            [ """
+            vec3 diffuseColor = texture2D(textureDiff, vTexCoord).rgb;
+"""
+            ]
+    }
+
+
+{-| Provides a constant diffuseColor
+ -}
+fragment_constantDiffuse : Component
+fragment_constantDiffuse =
+    { empty
+        | id = "lighting.fragment_constantDiffuse"
+        , provides = [ "diffuseColor" ]
+        , globals =
+            [ Varying "vec2" "vTexCoord"
+            ] 
+        , splices =
+            [ """
+            vec3 diffuseColor = vec3(0.3, 0.2, 0.95);
+"""
+            ]
+    }
+
+
+
+{-| Provides diffuse, given some diffuseColor
+ -}
+fragment_diffuse : Component
+fragment_diffuse =
+    { empty
+        | id = "lighting.fragment_diffuse"
+        , dependencies =
+            Dependencies
+                [ fragment_lightDir
+                , fragment_lightIntensities
+                ]
+        , provides = [ "diffuse" ]
+        , requires = [ "diffuseColor" ]
+        , globals = []
+        , splices =
+            [ """
+            // diffuse + lambert
+            vec3 diffuse = lambert * diffuseColor * lightIntensities;
+"""
+            ]
+    }
+
+
+
 {-| normal mapping according to:
 <http://www.gamasutra.com/blogs/RobertBasler/20131122/205462/Three_Normal_Mapping_Techniques_Explained_For_the_Mathematically_Uninclined.php?print=1>
 -}
@@ -352,23 +430,18 @@ fragmentNormal =
             [ fragment_lightDir
             , fragment_textureNormal
             , fragment_lambert
+            , fragment_textureDiffuse
+            , fragment_diffuse
             ]
     , provides = [ "gl_FragColor" ]
     , requires = []
     , globals =
-         [ Uniform "sampler2D" "textureDiff"
-         , Varying "vec2" "vTexCoord"
-         , Varying "vec3" "vLightDirection"
+         [ Varying "vec3" "vLightDirection"
          , Varying "vec3" "vViewDirection"
          ]
     , functions = []
     , splices =
          [ """
-            // diffuse + lambert
-            vec3 lightIntensities = vec3(1.5, 1.0, 1.0);
-            vec3 diffuseColor = texture2D(textureDiff, vTexCoord).rgb;
-            vec3 diffuse = lambert * diffuseColor * lightIntensities;
-
             // ambient
             vec3 ambient = 0.3 * diffuseColor;
 
@@ -456,6 +529,8 @@ fragmentNoNormal =
             [ fragment_lightDir
             , fragment_interpolatedNormal
             , fragment_lambert
+            , fragment_textureDiffuse
+            , fragment_diffuse
             ]
     , provides = [ "gl_FragColor" ]
     , requires = []
@@ -469,11 +544,6 @@ fragmentNoNormal =
     , functions = []
     , splices =
         [ """
-            // diffuse + lambert
-            vec3 lightIntensities = vec3(1.5, 1.0, 1.0);
-            vec3 diffuseColor = texture2D(textureDiff, vTexCoord).rgb;
-            vec3 diffuse = lambert * diffuseColor * lightIntensities;
-
             // ambient
             vec3 ambient = 0.3 * diffuseColor;
 
@@ -521,6 +591,8 @@ fragmentSimple =
             [ fragment_lightDir
             , fragment_interpolatedNormal
             , fragment_lambert
+            , fragment_constantDiffuse
+            , fragment_diffuse
             ]
     , provides = [ "gl_FragColor" ]
     , requires = []
@@ -532,11 +604,6 @@ fragmentSimple =
     , functions = []
     , splices =
         [ """
-            // diffuse + lambert
-            vec3 lightIntensities = vec3(1.5, 1.0, 1.0);
-            vec3 diffuseColor = vec3(0.3, 0.2, 0.95);
-            vec3 diffuse = lambert * diffuseColor * lightIntensities;
-
             // ambient
             vec3 ambient = 0.2 * diffuseColor;
 
