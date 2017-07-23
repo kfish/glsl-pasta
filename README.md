@@ -233,9 +233,9 @@ The default template is:
    """
 ```
 
-Here, `__PASTA_GLOBALS__` is replaced with a all the globals from all the parts (with duplicates removed),
-`__PASTA_FUNCTIONS__` is replaced with all the functions from all the parts,
-and `__PASTA_SPLICES__` is replaced with all the splices from all the parts, in the order the list of parts.
+Here, `__PASTA_GLOBALS__` is replaced with a all the globals from all the Components (with duplicates removed),
+`__PASTA_FUNCTIONS__` is replaced with all the functions from all the Components,
+and `__PASTA_SPLICES__` is replaced with all the splices from all the Components, in the order the list of Components.
 
 Note that the functions and splices are replaced as arbitrary strings, and glsl-pasta makes no
 attempt to parse or sanity-check these.
