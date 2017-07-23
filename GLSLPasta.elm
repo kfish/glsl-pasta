@@ -1,13 +1,13 @@
 module GLSLPasta
     exposing
         ( combine
-        , combineWith
+        , combineUsingTemplate
         , defaultTemplate
         )
 
 {-|
 
-@docs combine, combineWith
+@docs combine, combineUsingTemplate
 
 @docs defaultTemplate
 
@@ -17,30 +17,12 @@ import GLSLPasta.Internal as Internal exposing (..)
 import GLSLPasta.Types as Types exposing (..)
 
 
-logErrors : List Error -> String
-logErrors errors =
-    let
-        s =
-            String.join "\n" (List.map errorString errors)
-    in
-        Tuple.second ( Debug.log s "<<GLSLPasta>>", "" )
-
-
 {-| Combine Components into the code for a Shader, that can be passed to WebGL.unsafeShader.
 Errors are logged to the Javascript console.
 -}
 combine : List Component -> String
 combine components =
-    let
-        result =
-            combineWith defaultTemplate components
-    in
-        case result of
-            Ok s ->
-                s
-
-            Err errors ->
-                logErrors errors
+    combineUsingTemplate defaultTemplate components
 
 
 {-| The default template used by combine
@@ -62,8 +44,32 @@ void main()
     """
 
 
-{-| Combine using a given template
+{-| Combine Components into the code for a Shader, that can be passed to WebGL.unsafeShader.
+Errors are logged to the Javascript console.
+
+The template is specified as a string containing placeholders `__PASTA_GLOBALS__`,
+`__PASTA_FUNCTIONS__` and `__PASTA_SPLICES__`. For a concrete example, see the definition
+of `defaultTemplate`.
+
 -}
-combineWith : String -> List Component -> Result (List Error) String
-combineWith =
-    Internal.combineWith
+combineUsingTemplate : String -> List Component -> String
+combineUsingTemplate template components =
+    let
+        result =
+            Internal.combineWith template components
+    in
+        case result of
+            Ok s ->
+                s
+
+            Err errors ->
+                logErrors errors
+
+
+logErrors : List Error -> String
+logErrors errors =
+    let
+        s =
+            String.join "\n" (List.map errorString errors)
+    in
+        Tuple.second ( Debug.log s "<<GLSLPasta>>", "" )
