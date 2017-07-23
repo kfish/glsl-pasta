@@ -399,9 +399,6 @@ fragment_constantDiffuse =
     { empty
         | id = "lighting.fragment_constantDiffuse"
         , provides = [ "diffuseColor" ]
-        , globals =
-            [ Varying "vec2" "vTexCoord"
-            ]
         , splices =
             [ """
             vec3 diffuseColor = vec3(0.3, 0.2, 0.95);
