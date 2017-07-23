@@ -4,7 +4,7 @@ module GLSLPasta.Types exposing (..)
 
 # Types
 
-@docs Feature, Error, Function, Global, Name, Component, ComponentId, Splice, Type, Value
+@docs Feature, Error, Function, Global, Name, Component, ComponentId, Splice, Type, Value, Template
 
 @docs Dependencies, none
 
@@ -99,6 +99,15 @@ type Dependencies
 none : Dependencies
 none =
     Dependencies []
+
+
+{-| A Template
+-}
+type alias Template =
+    { id : ComponentId
+    , globals : List Global
+    , template : String
+    }
 
 
 {-| Errors returned during combine

@@ -27,9 +27,11 @@ combine components =
 
 {-| The default template used by combine
 -}
-defaultTemplate : String
+defaultTemplate : Template
 defaultTemplate =
-    """
+    { id = "defaultTemplate"
+    , globals = []
+    , template = """
 precision mediump float;
 
 __PASTA_GLOBALS__
@@ -40,8 +42,8 @@ void main()
 {
     __PASTA_SPLICES__
 }
-
-    """
+"""
+    }
 
 
 {-| Combine Components into the code for a Shader, that can be passed to WebGL.unsafeShader.
@@ -52,7 +54,7 @@ The template is specified as a string containing placeholders `__PASTA_GLOBALS__
 of `defaultTemplate`.
 
 -}
-combineUsingTemplate : String -> List Component -> String
+combineUsingTemplate : Template -> List Component -> String
 combineUsingTemplate template components =
     let
         result =

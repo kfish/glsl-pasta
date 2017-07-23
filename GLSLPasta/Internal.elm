@@ -184,7 +184,7 @@ insertGlobal component global symbols =
                                 err "qualifier"
 
 
-insertGlobals : Component -> Symbols -> ( List Error, Symbols )
+insertGlobals : { a | id : ComponentId, globals : List Global } -> Symbols -> ( List Error, Symbols )
 insertGlobals component symbols =
     let
         f : Global -> ( List Error, Symbols ) -> ( List Error, Symbols )
@@ -279,12 +279,11 @@ expandDependencies components =
             |> List.uniqueBy .id
 
 
-combineGlobals : List Component -> Result (List Error) String
-combineGlobals components =
+combineGlobals : Template -> List Component -> Result (List Error) String
+combineGlobals template components =
     let
-        symbols0 : Symbols
-        symbols0 =
-            Dict.empty
+        (errors0, symbols0) =
+            insertGlobals template Dict.empty
 
         f : Component -> ( List Error, Symbols ) -> ( List Error, Symbols )
         f component ( oldErrors, oldSymbols ) =
@@ -295,7 +294,7 @@ combineGlobals components =
                 ( oldErrors ++ newErrors, newSymbols )
 
         ( errors, symbols ) =
-            List.foldl f ( [], symbols0 ) components
+            List.foldl f ( errors0, symbols0 ) components
     in
         case errors of
             [] ->
@@ -343,7 +342,7 @@ templateGenerate globals functions splices template =
 --
 
 
-combineWith : String -> List Component -> Result (List Error) String
+combineWith : Template -> List Component -> Result (List Error) String
 combineWith template components0 =
     let
         components =
@@ -353,7 +352,7 @@ combineWith template components0 =
             checkRequirements components
 
         globalsResult =
-            combineGlobals components
+            combineGlobals template components
 
         functionsResult =
             combineFunctions components
@@ -372,7 +371,7 @@ combineWith template components0 =
     in
         case ( requirementsResult, globalsResult, functionsResult, splicesResult ) of
             ( Ok _, Ok globals, Ok functions, Ok splices ) ->
-                Ok (templateGenerate globals functions splices template)
+                Ok (templateGenerate globals functions splices template.template)
 
             _ ->
                 Err
