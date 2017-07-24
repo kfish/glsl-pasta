@@ -74,4 +74,4 @@ logErrors errors =
         s =
             String.join "\n" (List.map errorString errors)
     in
-        Tuple.second ( Debug.log s "\n<<GLSLPasta>>", "" )
+        Tuple.second ( Debug.log s "<<GLSLPasta>>", "" )
