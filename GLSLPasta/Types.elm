@@ -121,6 +121,7 @@ type Error
         , oldGlobal : Global
         }
     | MissingRequirement
-        { componentId : ComponentId
+        { parentComponentId : ComponentId
+        , componentId : ComponentId
         , requirement : Feature
         }

@@ -20,9 +20,9 @@ import GLSLPasta.Types as Types exposing (..)
 {-| Combine Components into the code for a Shader, that can be passed to WebGL.unsafeShader.
 Errors are logged to the Javascript console.
 -}
-combine : List Component -> String
-combine components =
-    combineUsingTemplate defaultTemplate components
+combine : ComponentId -> List Component -> String
+combine parent components =
+    combineUsingTemplate defaultTemplate parent components
 
 
 {-| The default template used by combine
@@ -54,11 +54,11 @@ The template is specified as a string containing placeholders `__PASTA_GLOBALS__
 of `defaultTemplate`.
 
 -}
-combineUsingTemplate : Template -> List Component -> String
-combineUsingTemplate template components =
+combineUsingTemplate : Template -> ComponentId -> List Component -> String
+combineUsingTemplate template parent components =
     let
         result =
-            Internal.combineWith template components
+            Internal.combineWith template parent components
     in
         case result of
             Ok s ->
@@ -74,4 +74,4 @@ logErrors errors =
         s =
             String.join "\n" (List.map errorString errors)
     in
-        Tuple.second ( Debug.log s "<<GLSLPasta>>", "" )
+        Tuple.second ( Debug.log s "\n<<GLSLPasta>>", "" )

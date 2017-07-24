@@ -58,7 +58,7 @@ errorString error =
 
         MissingRequirement m ->
             String.join "\n"
-                [ "Missing requirement " ++ m.requirement ++ ", needed by " ++ m.componentId
+                [ m.parentComponentId ++ ": Missing requirement " ++ m.requirement ++ ", needed by " ++ m.componentId
                 ]
 
 
@@ -228,15 +228,15 @@ symbolsGenerate symbols =
         |> String.join "\n"
 
 
-checkReqs : Component -> List Feature -> ( List Error, List Feature )
-checkReqs component oldFeatures =
+checkReqs : ComponentId -> Component -> List Feature -> ( List Error, List Feature )
+checkReqs parent component oldFeatures =
     let
         f : Feature -> List Error -> List Error
         f feature oldErrors =
             if List.member feature oldFeatures then
                 oldErrors
             else
-                oldErrors ++ [ MissingRequirement { componentId = component.id, requirement = feature } ]
+                oldErrors ++ [ MissingRequirement { parentComponentId = parent, componentId = component.id, requirement = feature } ]
 
         errors =
             List.foldl f [] component.requires
@@ -244,14 +244,14 @@ checkReqs component oldFeatures =
         ( errors, oldFeatures ++ component.provides )
 
 
-checkRequirements : List Component -> Result (List Error) String
-checkRequirements components =
+checkRequirements : ComponentId -> List Component -> Result (List Error) String
+checkRequirements parent components =
     let
         f : Component -> ( List Error, List Feature ) -> ( List Error, List Feature )
         f component ( oldErrors, oldFeatures ) =
             let
                 ( newErrors, newFeatures ) =
-                    checkReqs component oldFeatures
+                    checkReqs parent component oldFeatures
             in
                 ( oldErrors ++ newErrors, newFeatures )
 
@@ -342,14 +342,14 @@ templateGenerate globals functions splices template =
 --
 
 
-combineWith : Template -> List Component -> Result (List Error) String
-combineWith template components0 =
+combineWith : Template -> ComponentId -> List Component -> Result (List Error) String
+combineWith template parent components0 =
     let
         components =
             expandDependencies components0
 
         requirementsResult =
-            checkRequirements components
+            checkRequirements parent components
 
         globalsResult =
             combineGlobals template components
