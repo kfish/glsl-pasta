@@ -3,6 +3,7 @@ module GLSLPasta
         ( combine
         , combineUsingTemplate
         , defaultTemplate
+        , empty
         )
 
 {-|
@@ -11,8 +12,11 @@ module GLSLPasta
 
 @docs defaultTemplate
 
+@docs empty
+
 -}
 
+import GLSLPasta.Core as Core
 import GLSLPasta.Internal as Internal exposing (..)
 import GLSLPasta.Types as Types exposing (..)
 
@@ -75,3 +79,10 @@ logErrors errors =
             String.join "\n" (List.map errorString errors)
     in
         Tuple.second ( Debug.log s "<<GLSLPasta>>", "" )
+
+
+{-| An empty Component
+-}
+empty : Component
+empty =
+    Core.empty
