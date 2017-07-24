@@ -70,8 +70,8 @@ type alias Symbols =
     Dict String ( List ComponentId, Global )
 
 
-insertGlobal : ComponentId -> Global -> Symbols -> Result Error Symbols
-insertGlobal component global symbols =
+insertGlobal : ComponentId -> ComponentId -> Global -> Symbols -> Result Error Symbols
+insertGlobal parent component global symbols =
     case global of
         Attribute newType name ->
             case Dict.get name symbols of
@@ -83,6 +83,7 @@ insertGlobal component global symbols =
                         err what =
                             GlobalConflict
                                 { what = what
+                                , parentComponentId = parent
                                 , newComponentId = component
                                 , oldComponentIds = oldComponents
                                 , newGlobal = global
@@ -110,6 +111,7 @@ insertGlobal component global symbols =
                         err what =
                             GlobalConflict
                                 { what = what
+                                , parentComponentId = parent
                                 , newComponentId = component
                                 , oldComponentIds = oldComponents
                                 , newGlobal = global
@@ -137,6 +139,7 @@ insertGlobal component global symbols =
                         err what =
                             GlobalConflict
                                 { what = what
+                                , parentComponentId = parent
                                 , newComponentId = component
                                 , oldComponentIds = oldComponents
                                 , newGlobal = global
@@ -164,6 +167,7 @@ insertGlobal component global symbols =
                         err what =
                             GlobalConflict
                                 { what = what
+                                , parentComponentId = parent
                                 , newComponentId = component
                                 , oldComponentIds = oldComponents
                                 , newGlobal = global
@@ -184,12 +188,12 @@ insertGlobal component global symbols =
                                 err "qualifier"
 
 
-insertGlobals : { a | id : ComponentId, globals : List Global } -> Symbols -> ( List Error, Symbols )
-insertGlobals component symbols =
+insertGlobals : ComponentId -> { a | id : ComponentId, globals : List Global } -> Symbols -> ( List Error, Symbols )
+insertGlobals parent component symbols =
     let
         f : Global -> ( List Error, Symbols ) -> ( List Error, Symbols )
         f global ( oldErrors, oldSymbols ) =
-            case insertGlobal component.id global oldSymbols of
+            case insertGlobal parent component.id global oldSymbols of
                 Ok newSymbols ->
                     ( oldErrors, newSymbols )
 
@@ -279,17 +283,17 @@ expandDependencies components =
             |> List.uniqueBy .id
 
 
-combineGlobals : Template -> List Component -> Result (List Error) String
-combineGlobals template components =
+combineGlobals : ComponentId -> Template -> List Component -> Result (List Error) String
+combineGlobals parent template components =
     let
         (errors0, symbols0) =
-            insertGlobals template Dict.empty
+            insertGlobals parent template Dict.empty
 
         f : Component -> ( List Error, Symbols ) -> ( List Error, Symbols )
         f component ( oldErrors, oldSymbols ) =
             let
                 ( newErrors, newSymbols ) =
-                    insertGlobals component oldSymbols
+                    insertGlobals parent component oldSymbols
             in
                 ( oldErrors ++ newErrors, newSymbols )
 
@@ -352,7 +356,7 @@ combineWith template parent components0 =
             checkRequirements parent components
 
         globalsResult =
-            combineGlobals template components
+            combineGlobals parent template components
 
         functionsResult =
             combineFunctions components

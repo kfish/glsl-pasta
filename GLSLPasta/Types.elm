@@ -115,6 +115,7 @@ type alias Template =
 type Error
     = GlobalConflict
         { what : String
+        , parentComponentId : ComponentId
         , newComponentId : ComponentId
         , oldComponentIds : List ComponentId
         , newGlobal : Global
