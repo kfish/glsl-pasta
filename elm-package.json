@@ -1,5 +1,5 @@
 {
-    "version": "4.0.0",
+    "version": "4.0.1",
     "summary": "Combine GLSL shaders for use with Elm WebGL",
     "repository": "https://github.com/kfish/glsl-pasta.git",
     "license": "BSD3",
